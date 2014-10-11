@@ -1,0 +1,54 @@
+var Hoek = require('hoek');
+
+var defaults = {
+  excludeStatus: [200, 304],
+  tags: ['response']
+};
+
+exports.register = function(plugin, options, next) {
+
+  options = Hoek.applyToDefaults(defaults, options);
+
+  plugin.events.on('tail', function(request) {
+
+    var response = request.response;
+
+    if (options.excludeStatus.indexOf(response.statusCode) != -1) {
+      return;
+    }
+
+    var data = {
+      timestamp: request.info.received,
+      id: request.id,
+      instance: request.server.info.uri,
+      labels: request.server.settings.labels,
+      method: request.method,
+      path: request.path,
+      query: request.query,
+      statusCode: response.statusCode,
+      pid: process.pid
+    };
+
+
+    data.requestPayload = request.payload;
+
+    if (response.source && response.source.template) {
+      data.response = {
+        template: response.source.template,
+        context: response.source.context
+      };
+    } else {
+      data.response = response.source;
+    }
+
+
+    plugin.log(options.tags, data);
+
+  });
+  next();
+};
+
+exports.register.attributes = {
+  name: 'hapi-log-response',
+  pkg: require('./package.json')
+};
