@@ -1,31 +1,33 @@
 var Good = require('good');
 var Hapi = require('hapi');
 var Handlebars = require('handlebars');
+var Boom = require('boom');
 
-var server = new Hapi.Server(8080, '0.0.0.0', {
+var server = new Hapi.Server({
   debug: {
     request: ['error']
   }
 });
+server.connection({
+  port: 8080
+});
 
 var goodOptions = {
   reporters: [{
-      reporter: Good.GoodConsole,
+      reporter: require('good-console'),
       args: [{
-        events: {
-          //ops: '*',
-          request: '*',
-          log: '*',
-          error: '*'
-        }
+        //ops: '*',
+        response: '*',
+        log: '*',
+        error: '*'
       }]
     }
   ]
 };
 
-server.pack.register([
-  { plugin: Good, options: goodOptions },
-  { plugin: require('../'), options: {
+server.register([
+  { register: Good, options: goodOptions },
+  { register: require('../'), options: {
   }}
 ], function (err) {
 
@@ -47,7 +49,7 @@ server.pack.register([
        method: 'GET', 
        path: '/error', 
        handler: function(request, reply) {
-         reply(Hapi.error.badRequest('bad bad bad'));
+         reply(Boom.badRequest('bad bad bad'));
        }
      },
      { method: 'GET', path: '/', handler: function(request, reply) {

@@ -2,14 +2,14 @@ var Hoek = require('hoek');
 
 var defaults = {
   excludeStatus: [200, 304],
-  tags: ['response']
+  tags: ['detailed-response']
 };
 
-exports.register = function(plugin, options, next) {
+exports.register = function(server, options, next) {
 
   options = Hoek.applyToDefaults(defaults, options);
 
-  plugin.events.on('tail', function(request) {
+  server.on('tail', function(request) {
 
     var response = request.response;
 
@@ -42,7 +42,7 @@ exports.register = function(plugin, options, next) {
     }
 
 
-    plugin.log(options.tags, data);
+    server.log(options.tags, data);
 
   });
   next();
