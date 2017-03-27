@@ -3,7 +3,11 @@ const Hapi = require('hapi');
 const Handlebars = require('handlebars');
 const Boom = require('boom');
 
-const server = new Hapi.Server();
+const server = new Hapi.Server({
+  debug: {
+    request: ['error']
+  }
+});
 server.connection({
   port: 8080
 });
@@ -64,7 +68,10 @@ server.register([
     }
   ]);
 
-  server.start(() => {
+  server.start((serverErr) => {
+    if (serverErr) {
+      throw err;
+    }
     server.log(['log', 'server'], `Hapi server started ${server.info.uri}`);
   });
 });
