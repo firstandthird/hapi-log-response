@@ -23,12 +23,11 @@ exports.register = function(server, options, next) {
       labels: request.server.settings.labels,
       method: request.method,
       path: request.path,
-      query: request.query,
+      query: Object.assign({}, request.query),
       statusCode: response.statusCode,
       pid: process.pid
     };
-
-
+    
     data.requestPayload = request.payload;
 
     if (response.source && response.source.template) {
@@ -39,7 +38,7 @@ exports.register = function(server, options, next) {
     } else {
       data.response = response.source;
     }
-
+    
     server.log(options.tags, data);
   });
   next();
