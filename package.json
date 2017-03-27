@@ -4,18 +4,29 @@
   "homepage": "https://github.com/firstandthird/hapi-log-response",
   "author": "First+Third",
   "version": "0.1.0",
+  "scripts": {
+    "example": "node example/server.js",
+    "lint": "eslint ."
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/firstandthird/hapi-log-response.git"
   },
   "devDependencies": {
-    "boom": "^2.6.1",
-    "good": "^5.1.2",
-    "good-console": "^4.1.0",
-    "handlebars": "^3.0.0",
-    "hapi": "^8.2.0"
+    "boom": "4.3.0",
+    "eslint": "3.18.0",
+    "eslint-config-firstandthird": "3.3.0",
+    "eslint-plugin-import": "2.2.0",
+    "handlebars": "4.0.6",
+    "hapi": "16.1.0",
+    "hapi-logr": "2.2.0",
+    "logr-console-color": "1.2.1",
+    "vision": "4.1.1"
   },
   "dependencies": {
-    "hoek": "^2.5.1"
+    "hoek": "4.1.0"
+  },
+  "eslintConfig": {
+    "extends": "firstandthird"
   }
 }

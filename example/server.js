@@ -1,69 +1,70 @@
-var Good = require('good');
-var Hapi = require('hapi');
-var Handlebars = require('handlebars');
-var Boom = require('boom');
+'use strict';
+const Hapi = require('hapi');
+const Handlebars = require('handlebars');
+const Boom = require('boom');
 
-var server = new Hapi.Server({
-  debug: {
-    request: ['error']
-  }
-});
+const server = new Hapi.Server();
 server.connection({
   port: 8080
 });
 
-var goodOptions = {
-  reporters: [{
-      reporter: require('good-console'),
-      args: [{
-        //ops: '*',
-        response: '*',
-        log: '*',
-        error: '*'
-      }]
-    }
-  ]
-};
-
 server.register([
-  { register: Good, options: goodOptions },
-  { register: require('../'), options: {
-  }}
-], function (err) {
+  { register: require('vision') },
+  {
+    register: require('hapi-logr'),
+    options: {
+      reporters: {
+        console: {
+          reporter: require('logr-console-color')
+        }
+      }
+    }
+  },
+  {
+    register: require('../'),
+    options: {
+    }
+  }
+], (err) => {
+  if (err) {
+    throw err;
+  }
 
-   if (err) {
-      console.log(err);
-      return;
-   }
 
+  server.views({
+    engines: {
+      html: Handlebars
+    },
+    path: `${__dirname}/views`
+  });
 
-   server.views({
-     engines: {
-       html: Handlebars
-     },
-     path: __dirname + '/views'
-   });
+  server.route([
+    {
+      method: 'GET',
+      path: '/error',
+      handler(request, reply) {
+        reply(Boom.badRequest('bad bad bad'));
+      }
+    },
+    {
+      method: 'GET',
+      path: '/',
+      handler(request, reply) {
+        reply('ok');
+      }
+    },
+    {
+      method: 'GET',
+      path: '/view',
+      handler(request, reply) {
+        reply.view('view', {
+          test: 123
+        }).code(401);
+      }
+    }
+  ]);
 
-   server.route([
-     {
-       method: 'GET', 
-       path: '/error', 
-       handler: function(request, reply) {
-         reply(Boom.badRequest('bad bad bad'));
-       }
-     },
-     { method: 'GET', path: '/', handler: function(request, reply) {
-       reply('ok');
-     }},
-     { method: 'GET', path: '/view', handler: function(request, reply) {
-       reply.view('view', {
-         test: 123
-       }).code(401);
-     }}
-   ]);
-
-   server.start(function() {
-     server.log(['log', 'server'], 'Hapi server started '+ server.info.uri);
-   });
-
+  server.start(() => {
+    server.log(['log', 'server'], `Hapi server started ${server.info.uri}`);
+  });
 });

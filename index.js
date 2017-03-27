@@ -1,23 +1,22 @@
-var Hoek = require('hoek');
+'use strict';
+const Hoek = require('hoek');
 
-var defaults = {
+const defaults = {
   excludeStatus: [200, 304],
   tags: ['detailed-response']
 };
 
 exports.register = function(server, options, next) {
-
   options = Hoek.applyToDefaults(defaults, options);
 
-  server.on('tail', function(request) {
+  server.on('tail', (request) => {
+    const response = request.response;
 
-    var response = request.response;
-
-    if (options.excludeStatus.indexOf(response.statusCode) != -1) {
+    if (options.excludeStatus.indexOf(response.statusCode) !== -1) {
       return;
     }
 
-    var data = {
+    const data = {
       timestamp: request.info.received,
       id: request.id,
       instance: request.server.info.uri,
@@ -41,9 +40,7 @@ exports.register = function(server, options, next) {
       data.response = response.source;
     }
 
-
     server.log(options.tags, data);
-
   });
   next();
 };
