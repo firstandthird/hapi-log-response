@@ -15,10 +15,12 @@ exports.register = function(server, options, next) {
     if (options.excludeStatus.indexOf(response.statusCode) !== -1) {
       return;
     }
-
     const data = {
       timestamp: request.info.received,
       id: request.id,
+      referrer: request.info.referrer,
+      userAgent: request.headers['user-agent'],
+      ip: request.info.remoteAddress,
       instance: request.server.info.uri,
       labels: request.server.settings.labels,
       method: request.method,
@@ -27,7 +29,6 @@ exports.register = function(server, options, next) {
       statusCode: response.statusCode,
       pid: process.pid
     };
-    
     data.requestPayload = request.payload;
 
     if (response.source && response.source.template) {
@@ -38,7 +39,6 @@ exports.register = function(server, options, next) {
     } else {
       data.response = response.source;
     }
-    
     server.log(options.tags, data);
   });
   next();
