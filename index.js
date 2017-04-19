@@ -3,6 +3,7 @@ const Hoek = require('hoek');
 
 const defaults = {
   excludeStatus: [200, 304],
+  excludeResponse: [404],
   tags: ['detailed-response']
 };
 
@@ -31,13 +32,15 @@ exports.register = function(server, options, next) {
     };
     data.requestPayload = request.payload;
 
-    if (response.source && response.source.template) {
-      data.response = {
-        template: response.source.template,
-        context: response.source.context
-      };
-    } else {
-      data.response = response.source;
+    if (options.excludeResponse.indexOf(response.statusCode) === -1) {
+      if (response.source && response.source.template) {
+        data.response = {
+          template: response.source.template,
+          context: response.source.context
+        };
+      } else {
+        data.response = response.source;
+      }
     }
     server.log(options.tags, data);
   });
