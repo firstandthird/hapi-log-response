@@ -42,7 +42,23 @@ exports.register = function(server, options, next) {
         data.response = response.source;
       }
     }
-    server.log(options.tags, data);
+    /*
+    301,302 - redirect
+    404 - not found
+    40x - user-error
+    50x - server-error
+    */
+    const tags = options.tags ? options.tags : [];
+    if ([301,302].indexOf(response.statusCode) > -1) {
+      tags.push('redirect');
+    } else if (400 === response.statusCode) {
+      tags.push('not-found');
+    } else if (response.statusCode > 400 && response.statusCode < 500) {
+      tags.push('user-error');
+    } else if (response.statusCode >= 500) {
+      tags.push('server-error');
+    }
+    server.log(tags, data);
   });
   next();
 };

@@ -65,6 +65,13 @@ server.register([
           test: 123
         }).code(401);
       }
+    },
+    {
+      method: 'GET',
+      path: '/breaking',
+      handler(request, reply) {
+        reply.view('').code(500);
+      }
     }
   ]);
 
