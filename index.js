@@ -12,6 +12,9 @@ exports.register = function(server, options, next) {
 
   server.on('tail', (request) => {
     const response = request.response;
+    if (!response) {
+      return;
+    }
 
     if (options.excludeStatus.indexOf(response.statusCode) !== -1) {
       return;
