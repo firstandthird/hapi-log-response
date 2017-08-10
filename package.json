@@ -24,7 +24,8 @@
     "vision": "4.1.1"
   },
   "dependencies": {
-    "hoek": "4.1.0"
+    "hoek": "4.1.0",
+    "useragent": "^2.2.1"
   },
   "eslintConfig": {
     "extends": "firstandthird"
