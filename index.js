@@ -1,5 +1,6 @@
 'use strict';
 const Hoek = require('hoek');
+const useragent = require('useragent');
 
 const defaults = {
   excludeStatus: [200, 304],
@@ -23,7 +24,7 @@ exports.register = function(server, options, next) {
       timestamp: request.info.received,
       id: request.id,
       referrer: request.info.referrer,
-      userAgent: request.headers['user-agent'],
+      userAgent: useragent.parse(request.headers['user-agent']).toString(),
       ip: request.info.remoteAddress,
       instance: request.server.info.uri,
       labels: request.server.settings.labels,
