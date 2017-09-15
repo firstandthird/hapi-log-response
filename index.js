@@ -11,7 +11,8 @@ const defaults = {
 exports.register = function(server, options, next) {
   options = Hoek.applyToDefaults(defaults, options);
 
-  server.on('tail', (request) => {
+  server.ext('onPreResponse', (request, reply) => {
+    reply.continue();
     const response = request.response;
     if (!response) {
       return;
@@ -64,6 +65,7 @@ exports.register = function(server, options, next) {
       tags.push('server-error');
     }
     server.log(tags, data);
+    return;
   });
   next();
 };
