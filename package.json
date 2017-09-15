@@ -3,7 +3,7 @@
   "description": "Log request and response payloads based on statusCode",
   "homepage": "https://github.com/firstandthird/hapi-log-response",
   "author": "First+Third",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "scripts": {
     "example": "node example/server.js",
     "lint": "eslint ."
