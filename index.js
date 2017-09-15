@@ -11,14 +11,14 @@ const defaults = {
 exports.register = function(server, options, next) {
   options = Hoek.applyToDefaults(defaults, options);
 
-  server.on('tail', (request) => {
+  server.ext('onPreResponse', (request, reply) => {
     const response = request.response;
     if (!response) {
-      return;
+      return reply.continue();
     }
 
     if (options.excludeStatus.indexOf(response.statusCode) !== -1) {
-      return;
+      return reply.continue();
     }
     const data = {
       timestamp: request.info.received,
@@ -64,6 +64,7 @@ exports.register = function(server, options, next) {
       tags.push('server-error');
     }
     server.log(tags, data);
+    return reply.continue();
   });
   next();
 };
