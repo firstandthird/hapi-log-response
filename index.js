@@ -3,7 +3,7 @@ const Hoek = require('hoek');
 const useragent = require('useragent');
 
 const defaults = {
-  excludeStatus: [200, 304],
+  excludeStatus: [200, 204, 304],
   excludeResponse: [404],
   tags: ['detailed-response']
 };
