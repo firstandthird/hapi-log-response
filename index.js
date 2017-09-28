@@ -57,6 +57,7 @@ exports.register = function(server, options, next) {
     const tags = [].concat(options.tags);
     if ([301, 302].indexOf(response.statusCode) > -1) {
       tags.push('redirect');
+      data.redirectTo = response.headers.location;
     } else if (response.statusCode === 404) {
       tags.push('not-found');
     } else if (response.statusCode >= 400 && response.statusCode < 500) {
