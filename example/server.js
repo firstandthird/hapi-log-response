@@ -72,7 +72,15 @@ server.register([
       handler(request, reply) {
         reply.view('').code(500);
       }
+    },
+    {
+      method: 'GET',
+      path: '/redirect',
+      handler(request, reply) {
+        reply.redirect('/');
+      }
     }
+
   ]);
 
   server.start((serverErr) => {
