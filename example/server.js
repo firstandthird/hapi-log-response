@@ -68,7 +68,7 @@ server.register([
         }
       },
       handler(request, reply) {
-        reply('ok (no log message)');
+        reply(Boom.badRequest('bad bad bad (disabled logging)'));
       }
     },
     {
