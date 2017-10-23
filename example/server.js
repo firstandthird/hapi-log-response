@@ -59,6 +59,20 @@ server.register([
     },
     {
       method: 'GET',
+      path: '/disabled',
+      config: {
+        plugins: {
+          'hapi-log-response': {
+            enabled: false
+          }
+        }
+      },
+      handler(request, reply) {
+        reply(Boom.badRequest('bad bad bad (disabled logging)'));
+      }
+    },
+    {
+      method: 'GET',
       path: '/view',
       handler(request, reply) {
         reply.view('view', {

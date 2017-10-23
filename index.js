@@ -17,6 +17,9 @@ exports.register = function(server, options, next) {
     if (!response) {
       return;
     }
+    if (request.route.settings.plugins['hapi-log-response'] && request.route.settings.plugins['hapi-log-response'].enabled === false) {
+      return;
+    }
 
     if (options.excludeStatus.indexOf(response.statusCode) !== -1) {
       return;
