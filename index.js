@@ -14,7 +14,7 @@ exports.register = function(server, options, next) {
   server.ext('onPreResponse', (request, reply) => {
     reply.continue();
     const response = request.response;
-    if (!response) {
+    if (!response || request.route.settings.plugins['hapi-log-response'].enabled === false) {
       return;
     }
 

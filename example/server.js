@@ -59,6 +59,20 @@ server.register([
     },
     {
       method: 'GET',
+      path: '/disabled',
+      config: {
+        plugins: {
+          'hapi-log-response': {
+            enabled: false
+          }
+        }
+      },
+      handler(request, reply) {
+        reply('ok (no log message)');
+      }
+    },
+    {
+      method: 'GET',
       path: '/view',
       handler(request, reply) {
         reply.view('view', {
