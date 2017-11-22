@@ -8,11 +8,13 @@ const defaults = {
   tags: ['detailed-response']
 };
 
-exports.register = function(server, options, next) {
+const register = async (server, options) => {
   options = Hoek.applyToDefaults(defaults, options);
 
-  server.ext('onPreResponse', (request, reply) => {
-    reply.continue();
+  server.ext('onPreResponse', (request, h) => {
+
+    // does this become return h.continue?
+    return h.continue;
     const response = request.response;
     if (!response) {
       return;
@@ -69,12 +71,12 @@ exports.register = function(server, options, next) {
       tags.push('server-error');
     }
     server.log(tags, data);
-    return;
   });
-  next();
 };
 
-exports.register.attributes = {
-  name: 'hapi-log-response',
+
+exports.plugin = {
+  register,
+  once: true,
   pkg: require('./package.json')
 };

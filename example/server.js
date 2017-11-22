@@ -3,58 +3,52 @@ const Hapi = require('hapi');
 const Handlebars = require('handlebars');
 const Boom = require('boom');
 
-const server = new Hapi.Server({
-  debug: {
-    request: ['error']
-  }
-});
-server.connection({
-  port: 8080
-});
-
-server.register([
-  { register: require('vision') },
-  {
-    register: require('hapi-logr'),
-    options: {
-      reporters: {
-        console: {
-          reporter: require('logr-console-color')
+const run = async () => {
+  const server = new Hapi.Server({
+    debug: {
+      request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('vision') },
+    { plugin: require('hapi-logr'),
+      options: {
+        reporters: {
+          console: {
+            reporter: require('logr-console-color')
+          }
         }
       }
-    }
-  },
-  {
-    register: require('../'),
-    options: {
-    }
-  }
-], (err) => {
-  if (err) {
-    throw err;
-  }
-
-
-  server.views({
-    engines: {
-      html: Handlebars
     },
-    path: `${__dirname}/views`
-  });
+    { plugin: require('../'),
+      options: {
+      }
+    }
+  ]);
+  console.log('----')
+  console.log('----')
+  console.log('----')
+  // server.views({
+  //   engines: {
+  //     html: Handlebars
+  //   },
+  //   path: `${__dirname}/views`
+  // });
 
   server.route([
     {
       method: 'GET',
       path: '/error',
-      handler(request, reply) {
-        reply(Boom.badRequest('bad bad bad'));
+      handler(request, h) {
+        throw Boom.badRequest('bad bad bad');
       }
     },
     {
       method: 'GET',
       path: '/',
-      handler(request, reply) {
-        reply('ok');
+      handler(request, h) {
+        return 'ok';
       }
     },
     {
@@ -67,15 +61,15 @@ server.register([
           }
         }
       },
-      handler(request, reply) {
-        reply(Boom.badRequest('bad bad bad (disabled logging)'));
+      handler(request, h) {
+        throw Boom.badRequest('bad bad bad (disabled logging)');
       }
     },
     {
       method: 'GET',
       path: '/view',
-      handler(request, reply) {
-        reply.view('view', {
+      handler(request, h) {
+        return h.view('view', {
           test: 123
         }).code(401);
       }
@@ -83,24 +77,21 @@ server.register([
     {
       method: 'GET',
       path: '/breaking',
-      handler(request, reply) {
-        reply.view('').code(500);
+      handler(request, h) {
+        return h.view('').code(500);
       }
     },
     {
       method: 'GET',
       path: '/redirect',
-      handler(request, reply) {
-        reply.redirect('/');
+      handler(request, h) {
+        return h.redirect('/');
       }
     }
-
   ]);
+  await server.start();
+  console.log('starting')
+  server.log(['log', 'server'], `Hapi server started ${server.info.uri}`);
+};
 
-  server.start((serverErr) => {
-    if (serverErr) {
-      throw err;
-    }
-    server.log(['log', 'server'], `Hapi server started ${server.info.uri}`);
-  });
-});
+run();
