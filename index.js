@@ -15,14 +15,14 @@ const register = async (server, options) => {
 
     const response = request.response;
     if (!response) {
-      return h.continue;
+      return;
     }
     if (request.route.settings.plugins['hapi-log-response'] && request.route.settings.plugins['hapi-log-response'].enabled === false) {
-      return h.continue;
+      return;
     }
 
     if (options.excludeStatus.indexOf(response.statusCode) !== -1) {
-      return h.continue;
+      return;
     }
     const data = {
       timestamp: request.info.received,
@@ -68,7 +68,7 @@ const register = async (server, options) => {
       tags.push('server-error');
     }
     server.log(tags, data);
-    return h.continue;
+    return;
   });
 };
 
