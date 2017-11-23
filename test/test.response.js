@@ -31,7 +31,7 @@ test('logs errors responses', async (t) => {
   const response = await server.inject({ url: '/error' });
 });
 
-test('route config can be disabled', async (t) => {
+test('individual routes can disable plugin', async (t) => {
   const server = new Hapi.Server({
     debug: {
       request: ['error']
