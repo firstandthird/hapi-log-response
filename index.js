@@ -13,18 +13,16 @@ const register = async (server, options) => {
 
   server.ext('onPreResponse', (request, h) => {
 
-    // does this become return h.continue?
-    return h.continue;
     const response = request.response;
     if (!response) {
-      return;
+      return h.continue;
     }
     if (request.route.settings.plugins['hapi-log-response'] && request.route.settings.plugins['hapi-log-response'].enabled === false) {
-      return;
+      return h.continue;
     }
 
     if (options.excludeStatus.indexOf(response.statusCode) !== -1) {
-      return;
+      return h.continue;
     }
     const data = {
       timestamp: request.info.received,
@@ -42,7 +40,6 @@ const register = async (server, options) => {
       pid: process.pid
     };
     data.requestPayload = request.payload;
-
     if (options.excludeResponse.indexOf(response.statusCode) === -1) {
       if (response.source && response.source.template) {
         data.response = {
@@ -71,9 +68,9 @@ const register = async (server, options) => {
       tags.push('server-error');
     }
     server.log(tags, data);
+    return h.continue;
   });
 };
-
 
 exports.plugin = {
   register,
