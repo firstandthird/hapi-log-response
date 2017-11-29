@@ -106,6 +106,7 @@ test('logs redirects', async (t) => {
     t.end();
   });
   const response = await server.inject({ url: '/redirect' });
+  t.equal(response.statusCode, 302);
 });
 
 test('logs not-found errors', async (t) => {
@@ -136,6 +137,7 @@ test('logs not-found errors', async (t) => {
   });
   await server.start();
   const response = await server.inject({ url: '/breaking' });
+  t.equal(response.statusCode, 404);
 });
 
 test('logs user errors responses', async (t) => {
@@ -167,6 +169,7 @@ test('logs user errors responses', async (t) => {
   });
   await server.start();
   const response = await server.inject({ url: '/user' });
+  t.equal(response.statusCode, 401);
 });
 
 test('logs server errors', async (t) => {
@@ -198,4 +201,34 @@ test('logs server errors', async (t) => {
   });
   await server.start();
   const response = await server.inject({ url: '/breaking' });
+  t.equal(response.statusCode, 500);
+});
+
+test('does not interfere with routes that are not affected', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+      }
+    }
+  ]);
+  server.route([
+    {
+      method: 'GET',
+      path: '/hello',
+      handler(request, h) {
+        return 'hello';
+      }
+    },
+  ]);
+  await server.start();
+  const response = await server.inject({ url: '/hello' });
+  t.equal(response.statusCode, 200);
+  await server.stop();
+  t.end();
 });

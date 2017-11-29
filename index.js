@@ -12,17 +12,16 @@ const register = async (server, options) => {
   options = Hoek.applyToDefaults(defaults, options);
 
   server.ext('onPreResponse', (request, h) => {
-
     const response = request.response;
     if (!response) {
-      return;
+      return h.continue;
     }
     if (request.route.settings.plugins['hapi-log-response'] && request.route.settings.plugins['hapi-log-response'].enabled === false) {
-      return;
+      return h.continue;
     }
 
     if (options.excludeStatus.indexOf(response.statusCode) !== -1) {
-      return;
+      return h.continue;
     }
     const data = {
       timestamp: request.info.received,
@@ -68,7 +67,7 @@ const register = async (server, options) => {
       tags.push('server-error');
     }
     server.log(tags, data);
-    return;
+    return h.continue;
   });
 };
 
