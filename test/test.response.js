@@ -204,7 +204,7 @@ test('logs server errors', async (t) => {
   t.equal(response.statusCode, 500);
 });
 
-test('does not interfere with routes that are not affected', async (t) => {
+test('does not interfere with routes', async (t) => {
   const server = new Hapi.Server({
     debug: {
       request: ['error']
