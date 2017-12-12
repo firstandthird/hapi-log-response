@@ -40,6 +40,10 @@ exports.register = function(server, options, next) {
       pid: process.pid
     };
     data.requestPayload = request.payload;
+    
+    if (response._error && response._error.data) {
+      data.errorData = response._error.data;
+    }
 
     if (options.excludeResponse.indexOf(response.statusCode) === -1) {
       if (response.source && response.source.template) {
