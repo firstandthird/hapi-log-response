@@ -73,6 +73,13 @@ server.register([
     },
     {
       method: 'GET',
+      path: '/payload',
+      handler(request, reply) {
+        reply(Boom.badRequest('oops', { test: 123 }));
+      }
+    },
+    {
+      method: 'GET',
       path: '/view',
       handler(request, reply) {
         reply.view('view', {
