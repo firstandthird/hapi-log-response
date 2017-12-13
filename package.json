@@ -3,8 +3,9 @@
   "description": "Log request and response payloads based on statusCode",
   "homepage": "https://github.com/firstandthird/hapi-log-response",
   "author": "First+Third",
-  "version": "1.8.0",
+  "version": "2.0.1",
   "scripts": {
+    "test": "tap test/test.response.js",
     "example": "node example/server.js",
     "lint": "eslint ."
   },
@@ -18,10 +19,12 @@
     "eslint-config-firstandthird": "3.3.0",
     "eslint-plugin-import": "2.2.0",
     "handlebars": "4.0.6",
-    "hapi": "16.1.0",
+    "hapi": "^17.0.1",
     "hapi-logr": "2.2.0",
     "logr-console-color": "1.2.1",
-    "vision": "4.1.1"
+    "tap": "^10.7.3",
+    "vision": "^5.2.0",
+    "wreck": "^14.0.2"
   },
   "dependencies": {
     "hoek": "4.1.0",
