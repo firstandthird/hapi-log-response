@@ -39,7 +39,7 @@ const register = async (server, options) => {
       pid: process.pid
     };
     data.requestPayload = request.payload;
-    
+
     if (response._error && response._error.data) {
       data.errorData = response._error.data;
     }
@@ -72,6 +72,7 @@ const register = async (server, options) => {
       tags.push('server-error');
     }
     server.log(tags, data);
+    console.log(tags, data, response);
     return h.continue;
   });
 };

@@ -232,3 +232,30 @@ test('does not interfere with routes', async (t) => {
   await server.stop();
   t.end();
 });
+
+test('passes custom error data', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+      }
+    }
+  ]);
+  server.route({
+    method: 'GET',
+    path: '/error',
+    handler(request, h) {
+      throw boom.badRequest('bad bad bad', { test: 1, pizza: 'pie' });
+    }
+  });
+  await server.start();
+  const request = await server.inject({ url: '/error' });
+  console.log('request', request);
+  await server.stop();
+  t.end();
+});
