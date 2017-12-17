@@ -1,7 +1,6 @@
 const test = require('tap').test;
 const Hapi = require('hapi');
 const boom = require('boom');
-const Handlebars = require('handlebars');
 
 test('logs errors responses', async (t) => {
   const server = new Hapi.Server({
@@ -254,8 +253,18 @@ test('passes custom error data', async (t) => {
     }
   });
   await server.start();
-  const request = await server.inject({ url: '/error' });
-  console.log('request', request);
+
+  server.ext('onPreResponse', async (request, h) => {
+    const response = request.response;
+
+    t.equal(response.isBoom, true);
+    t.equal(response.data.test, 1);
+    t.equal(response.data.pizza, 'pie');
+
+    h.continue();
+  });
+
+  await server.inject({ url: '/error' });
   await server.stop();
   t.end();
 });
