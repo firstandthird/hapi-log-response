@@ -1,6 +1,5 @@
 'use strict';
 const Hapi = require('hapi');
-const Handlebars = require('handlebars');
 const Boom = require('boom');
 
 const run = async () => {
@@ -26,9 +25,9 @@ const run = async () => {
       }
     }
   ]);
-  console.log('----')
-  console.log('----')
-  console.log('----')
+  console.log('----');
+  console.log('----');
+  console.log('----');
   // server.views({
   //   engines: {
   //     html: Handlebars
@@ -67,6 +66,13 @@ const run = async () => {
     },
     {
       method: 'GET',
+      path: '/payload',
+      handler(request, reply) {
+        reply(Boom.badRequest('oops', { test: 123 }));
+      }
+    },
+    {
+      method: 'GET',
       path: '/view',
       handler(request, h) {
         return h.view('view', {
@@ -90,7 +96,7 @@ const run = async () => {
     }
   ]);
   await server.start();
-  console.log('starting')
+  console.log('starting');
   server.log(['log', 'server'], `Hapi server started ${server.info.uri}`);
 };
 
