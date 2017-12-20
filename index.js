@@ -72,7 +72,6 @@ const register = async (server, options) => {
       tags.push('server-error');
     }
     server.log(tags, data);
-    console.log(tags, data, response);
     return h.continue;
   });
 };
