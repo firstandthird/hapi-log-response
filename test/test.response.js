@@ -261,7 +261,7 @@ test('passes custom error data', async (t) => {
     t.equal(response.data.test, 1);
     t.equal(response.data.pizza, 'pie');
 
-    h.continue();
+    return h.continue;
   });
 
   await server.inject({ url: '/error' });
