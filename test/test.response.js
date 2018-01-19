@@ -27,7 +27,7 @@ test('logs errors responses', async (t) => {
     t.end();
   });
   await server.start();
-  const response = await server.inject({ url: '/error' });
+  await server.inject({ url: '/error' });
 });
 
 test('individual routes can disable plugin', async (t) => {
@@ -62,7 +62,7 @@ test('individual routes can disable plugin', async (t) => {
     t.fail();
   });
   await server.start();
-  const response = await server.inject({ url: '/disabled' });
+  await server.inject({ url: '/disabled' });
   const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
   await wait(2000);
   await server.stop();
@@ -254,14 +254,14 @@ test('passes custom error data', async (t) => {
   });
   await server.start();
 
-  server.ext('onPreResponse', async (request, h) => {
+  server.ext('onPreResponse', (request, h) => {
     const response = request.response;
 
     t.equal(response.isBoom, true);
     t.equal(response.data.test, 1);
     t.equal(response.data.pizza, 'pie');
 
-    h.continue();
+    return h.continue;
   });
 
   await server.inject({ url: '/error' });

@@ -1,4 +1,3 @@
-'use strict';
 const Hoek = require('hoek');
 const useragent = require('useragent');
 
@@ -8,7 +7,7 @@ const defaults = {
   tags: ['detailed-response']
 };
 
-const register = async (server, options) => {
+const register = (server, options) => {
   options = Hoek.applyToDefaults(defaults, options);
 
   server.ext('onPreResponse', (request, h) => {
@@ -20,7 +19,8 @@ const register = async (server, options) => {
       return h.continue;
     }
 
-    if (options.excludeStatus.indexOf(response.statusCode) !== -1) {
+    const statusCode = response.output ? response.output.statusCode : response.statusCode;
+    if (options.excludeStatus.indexOf(statusCode) !== -1) {
       return h.continue;
     }
     const data = {
@@ -35,7 +35,7 @@ const register = async (server, options) => {
       method: request.method,
       path: request.path,
       query: Object.assign({}, request.query),
-      statusCode: response.statusCode,
+      statusCode,
       pid: process.pid
     };
     data.requestPayload = request.payload;
@@ -44,7 +44,7 @@ const register = async (server, options) => {
       data.errorData = response._error.data;
     }
 
-    if (options.excludeResponse.indexOf(response.statusCode) === -1) {
+    if (options.excludeResponse.indexOf(statusCode) === -1) {
       if (response.source && response.source.template) {
         data.response = {
           template: response.source.template,
@@ -61,14 +61,14 @@ const register = async (server, options) => {
     50x - server-error
     */
     const tags = [].concat(options.tags);
-    if ([301, 302].indexOf(response.statusCode) > -1) {
+    if ([301, 302].indexOf(statusCode) > -1) {
       tags.push('redirect');
       data.redirectTo = response.headers.location;
-    } else if (response.statusCode === 404) {
+    } else if (statusCode === 404) {
       tags.push('not-found');
-    } else if (response.statusCode >= 400 && response.statusCode < 500) {
+    } else if (statusCode >= 400 && statusCode < 500) {
       tags.push('user-error');
-    } else if (response.statusCode >= 500) {
+    } else if (statusCode >= 500) {
       tags.push('server-error');
     }
     server.log(tags, data);

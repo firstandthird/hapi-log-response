@@ -1,7 +1,7 @@
 'use strict';
 const Hapi = require('hapi');
 const Boom = require('boom');
-
+const Handlebars = require('handlebars');
 const run = async () => {
   const server = new Hapi.Server({
     debug: {
@@ -25,15 +25,12 @@ const run = async () => {
       }
     }
   ]);
-  console.log('----');
-  console.log('----');
-  console.log('----');
-  // server.views({
-  //   engines: {
-  //     html: Handlebars
-  //   },
-  //   path: `${__dirname}/views`
-  // });
+  server.views({
+    engines: {
+      html: Handlebars
+    },
+    path: `${__dirname}/views`
+  });
 
   server.route([
     {

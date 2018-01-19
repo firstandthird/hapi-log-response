@@ -5,7 +5,7 @@
   "author": "First+Third",
   "version": "2.1.1",
   "scripts": {
-    "test": "tap test/test.response.js",
+    "test": "eslint . && tap test/test.response.js",
     "example": "node example/server.js",
     "lint": "eslint ."
   },
@@ -18,9 +18,10 @@
   },
   "devDependencies": {
     "boom": "4.3.0",
-    "eslint": "3.18.0",
-    "eslint-config-firstandthird": "3.3.0",
-    "eslint-plugin-import": "2.2.0",
+    "eslint": "^4.15.0",
+    "eslint-config-firstandthird": "^4.3.0",
+    "eslint-plugin-import": "^2.8.0",
+    "handlebars": "^4.0.11",
     "hapi": "^17.0.1",
     "hapi-logr": "2.2.0",
     "logr-console-color": "1.2.1",
