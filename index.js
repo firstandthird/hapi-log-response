@@ -36,7 +36,7 @@ const register = async (server, options) => {
       method: request.method,
       path: request.path,
       query: Object.assign({}, request.query),
-      statusCode: statusCode,
+      statusCode,
       pid: process.pid
     };
     data.requestPayload = request.payload;
