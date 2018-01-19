@@ -1,4 +1,3 @@
-'use strict';
 const Hoek = require('hoek');
 const useragent = require('useragent');
 
@@ -8,7 +7,7 @@ const defaults = {
   tags: ['detailed-response']
 };
 
-const register = async (server, options) => {
+const register = (server, options) => {
   options = Hoek.applyToDefaults(defaults, options);
 
   server.ext('onPreResponse', (request, h) => {
