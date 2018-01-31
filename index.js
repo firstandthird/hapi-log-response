@@ -10,19 +10,19 @@ const defaults = {
 const register = (server, options) => {
   options = Hoek.applyToDefaults(defaults, options);
 
-  server.ext('onPreResponse', (request, h) => {
-    const response = request.response;
-    if (!response) {
-      return h.continue;
-    }
+  // log HTTP 301/302 redirects and 404's here:
+  server.events.on({ name: 'response' }, (request) => {
+    // individual routes can disable response logging:
     if (request.route.settings.plugins['hapi-log-response'] && request.route.settings.plugins['hapi-log-response'].enabled === false) {
-      return h.continue;
+      return;
     }
+    // exit immediately if not logging anything for this response:
+    if (![301, 302, 404].includes(request.response.statusCode)) {
+      return;
+    }
+    const statusCode = request.response.statusCode;
 
-    const statusCode = response.output ? response.output.statusCode : response.statusCode;
-    if (options.excludeStatus.indexOf(statusCode) !== -1) {
-      return h.continue;
-    }
+    const tags = [].concat(options.tags);
     const data = {
       timestamp: request.info.received,
       id: request.id,
@@ -36,43 +36,56 @@ const register = (server, options) => {
       path: request.path,
       query: Object.assign({}, request.query),
       statusCode,
-      pid: process.pid
+      pid: process.pid,
     };
-    data.requestPayload = request.payload;
-
-    if (response._error && response._error.data) {
-      data.errorData = response._error.data;
-    }
-
-    if (options.excludeResponse.indexOf(statusCode) === -1) {
-      if (response.source && response.source.template) {
-        data.response = {
-          template: response.source.template,
-          context: response.source.context
-        };
-      } else {
-        data.response = response.source;
-      }
-    }
-    /*
-    301,302 - redirect
-    404 - not found
-    40x - user-error
-    50x - server-error
-    */
-    const tags = [].concat(options.tags);
-    if ([301, 302].indexOf(statusCode) > -1) {
+    if ([301, 302].includes(statusCode)) {
       tags.push('redirect');
-      data.redirectTo = response.headers.location;
-    } else if (statusCode === 404) {
+      data.redirectTo = request.response.headers.location;
+    } else {
+      // everything else is a 404:
       tags.push('not-found');
-    } else if (statusCode >= 400 && statusCode < 500) {
-      tags.push('user-error');
-    } else if (statusCode >= 500) {
-      tags.push('server-error');
     }
     server.log(tags, data);
-    return h.continue;
+  });
+
+  // log HTTP errors 400-500 here:
+  server.events.on({ name: 'request' }, (request, event, eventTags) => {
+    // individual routes can disable response logging:
+    if (request.route.settings.plugins['hapi-log-response'] && request.route.settings.plugins['hapi-log-response'].enabled === false) {
+      return;
+    }
+    // some server errors emit two request events, make sure we are responding to only one:
+    if (!event.tags.includes('handler')) {
+      return;
+    }
+    if (event.error && event.error.output) {
+      const statusCode = event ? event.error.output.statusCode : request.response.statusCode;
+      const tags = [].concat(options.tags);
+      if (statusCode >= 400 && statusCode < 500) {
+        tags.push('user-error');
+      } else if (statusCode >= 500) {
+        tags.push('server-error');
+      }
+      const data = {
+        timestamp: request.info.received,
+        id: request.id,
+        referrer: request.info.referrer,
+        browser: useragent.parse(request.headers['user-agent']).toString(),
+        userAgent: request.headers['user-agent'],
+        ip: request.info.remoteAddress,
+        instance: request.server.info.uri,
+        labels: request.server.settings.labels,
+        method: request.method,
+        path: request.path,
+        query: Object.assign({}, request.query),
+        statusCode,
+        pid: process.pid,
+      };
+      if (event && event.error) {
+        data.error = event.error;
+      }
+      server.log(tags, data);
+    }
   });
 };
 
