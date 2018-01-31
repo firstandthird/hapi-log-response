@@ -3,7 +3,6 @@ const useragent = require('useragent');
 
 const defaults = {
   excludeStatus: [200, 204, 304],
-  excludeResponse: [404],
   tags: ['detailed-response']
 };
 
@@ -16,11 +15,11 @@ const register = (server, options) => {
     if (request.route.settings.plugins['hapi-log-response'] && request.route.settings.plugins['hapi-log-response'].enabled === false) {
       return;
     }
+    const statusCode = request.response.statusCode;
     // exit immediately if not logging anything for this response:
-    if (![301, 302, 404].includes(request.response.statusCode)) {
+    if (![301, 302, 404].includes(statusCode) || options.excludeStatus.includes(statusCode)) {
       return;
     }
-    const statusCode = request.response.statusCode;
 
     const tags = [].concat(options.tags);
     const data = {
@@ -54,12 +53,16 @@ const register = (server, options) => {
     if (request.route.settings.plugins['hapi-log-response'] && request.route.settings.plugins['hapi-log-response'].enabled === false) {
       return;
     }
-    // some server errors emit two request events, make sure we are responding to only one:
-    if (!event.tags.includes('handler')) {
-      return;
-    }
     if (event.error && event.error.output) {
-      const statusCode = event ? event.error.output.statusCode : request.response.statusCode;
+      // some server errors emit two request events, make sure we are responding to only one:
+      if (!event.tags.includes('handler')) {
+        return;
+      }
+      const statusCode = event.error.output.statusCode;
+      // ignore excluded statuses:
+      if (options.excludeStatus.includes(statusCode)) {
+        return;
+      }
       const tags = [].concat(options.tags);
       if (statusCode >= 400 && statusCode < 500) {
         tags.push('user-error');

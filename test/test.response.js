@@ -272,3 +272,42 @@ test('passes custom error data', async (t) => {
   await server.stop();
   t.end();
 });
+
+test('options.excludeStatus', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+        excludeStatus: [301, 302, 400]
+      }
+    }
+  ]);
+  server.route({
+    method: 'GET',
+    path: '/error',
+    handler(request, h) {
+      throw boom.badRequest('bad bad bad');
+    }
+  });
+  server.route({
+    method: 'GET',
+    path: '/redirect',
+    handler(request, h) {
+      return h.redirect('/ok');
+    }
+  });
+  server.events.on('log', (event, tags) => {
+    t.fail();
+  });
+  await server.start();
+  await server.inject({ url: '/error' });
+  await server.inject({ url: '/redirect' });
+  await wait(2000);
+  await server.stop();
+  t.end();
+});
