@@ -2,6 +2,8 @@ const test = require('tap').test;
 const Hapi = require('hapi');
 const boom = require('boom');
 
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 test('logs errors responses', async (t) => {
   const server = new Hapi.Server({
     debug: {
@@ -23,6 +25,8 @@ test('logs errors responses', async (t) => {
     }
   });
   server.events.on('log', async (event, tags) => {
+    t.deepEqual(tags, { 'detailed-response': true, 'user-error': true }, 'returns the right tags');
+    t.deepEqual(Object.keys(event.data), ['id', 'referrer', 'browser', 'userAgent', 'ip', 'method', 'path', 'query', 'statusCode', 'error'], 'includes data about the request');
     await server.stop();
     t.end();
   });
@@ -63,7 +67,6 @@ test('individual routes can disable plugin', async (t) => {
   });
   await server.start();
   await server.inject({ url: '/disabled' });
-  const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
   await wait(2000);
   await server.stop();
   t.end();
@@ -100,7 +103,7 @@ test('logs redirects', async (t) => {
   ]);
   await server.start();
   server.events.on('log', async (event, tags) => {
-    t.equal(tags.redirect, true);
+    t.deepEqual(tags, { 'detailed-response': true, redirect: true });
     await server.stop();
     t.end();
   });
@@ -139,7 +142,7 @@ test('logs not-found errors', async (t) => {
   t.equal(response.statusCode, 404);
 });
 
-test('logs user errors responses', async (t) => {
+test('does not log user errors responses', async (t) => {
   const server = new Hapi.Server({
     debug: {
       request: ['error']
@@ -161,14 +164,14 @@ test('logs user errors responses', async (t) => {
       }
     }
   ]);
-  server.events.on('log', async (event, tags) => {
-    t.equal(tags['user-error'], true);
-    await server.stop();
-    t.end();
-  });
+  server.events.on('log', (event, tags) => t.fail());
   await server.start();
   const response = await server.inject({ url: '/user' });
   t.equal(response.statusCode, 401);
+  // wait for event to be processed:
+  await wait(2000);
+  await server.stop();
+  t.end();
 });
 
 test('logs server errors', async (t) => {
@@ -189,9 +192,10 @@ test('logs server errors', async (t) => {
       method: 'GET',
       path: '/breaking',
       handler(request, h) {
-        return h.response('').code(500);
+        const a = {};
+        a.b.c = 1234;
       }
-    },
+    }
   ]);
   server.events.on('log', async (event, tags) => {
     t.equal(tags['server-error'], true);
@@ -267,4 +271,75 @@ test('passes custom error data', async (t) => {
   await server.inject({ url: '/error' });
   await server.stop();
   t.end();
+});
+
+test('options.excludeStatus', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+        excludeStatus: [301, 302, 400]
+      }
+    }
+  ]);
+  server.route({
+    method: 'GET',
+    path: '/error',
+    handler(request, h) {
+      throw boom.badRequest('bad bad bad');
+    }
+  });
+  server.route({
+    method: 'GET',
+    path: '/redirect',
+    handler(request, h) {
+      return h.redirect('/ok');
+    }
+  });
+  server.events.on('log', (event, tags) => {
+    t.fail();
+  });
+  await server.start();
+  await server.inject({ url: '/error' });
+  await server.inject({ url: '/redirect' });
+  await wait(2000);
+  await server.stop();
+  t.end();
+});
+
+test('options.requests logs a response for every request', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+        requests: true
+      }
+    }
+  ]);
+  server.route({
+    method: 'GET',
+    path: '/justYourAverageRoute',
+    handler(request, h) {
+      return 'everything is fine';
+    }
+  });
+  server.events.on('log', async (event, tags) => {
+    t.deepEqual(tags, { 'detailed-response': true }, 'returns the right tags');
+    t.deepEqual(Object.keys(event.data), ['id', 'referrer', 'browser', 'userAgent', 'ip', 'method', 'path', 'query', 'statusCode'], 'includes data about the request');
+    await server.stop();
+    t.end();
+  });
+  await server.start();
+  await server.inject({ url: '/justYourAverageRoute' });
+  await wait(500);
 });
