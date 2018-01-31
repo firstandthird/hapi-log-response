@@ -73,6 +73,17 @@ const register = (server, options) => {
       server.log(tags, data);
     }
   });
+
+  // options.request will register a handler that logs a response for every route:
+  if (options.requests) {
+    server.events.on({ name: 'response' }, (request) => {
+      // individual routes can disable response logging:
+      if (request.route.settings.plugins['hapi-log-response'] && request.route.settings.plugins['hapi-log-response'].enabled === false) {
+        return;
+      }
+      server.log([].concat(options.tags), getLogData(request));
+    });
+  }
 };
 
 exports.plugin = {

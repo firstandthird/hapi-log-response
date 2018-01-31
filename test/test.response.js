@@ -311,3 +311,35 @@ test('options.excludeStatus', async (t) => {
   await server.stop();
   t.end();
 });
+
+test('options.requests logs a response for every request', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+        requests: true
+      }
+    }
+  ]);
+  server.route({
+    method: 'GET',
+    path: '/justYourAverageRoute',
+    handler(request, h) {
+      return 'everything is fine';
+    }
+  });
+  server.events.on('log', async (event, tags) => {
+    t.deepEqual(tags, { 'detailed-response': true }, 'returns the right tags');
+    t.deepEqual(Object.keys(event.data), ['id', 'referrer', 'browser', 'userAgent', 'ip', 'method', 'path', 'query', 'statusCode'], 'includes data about the request');
+    await server.stop();
+    t.end();
+  });
+  await server.start();
+  await server.inject({ url: '/justYourAverageRoute' });
+  await wait(500);
+});
