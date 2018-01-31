@@ -26,7 +26,7 @@ test('logs errors responses', async (t) => {
   });
   server.events.on('log', async (event, tags) => {
     t.deepEqual(tags, { 'detailed-response': true, 'user-error': true }, 'returns the right tags');
-    t.deepEqual(Object.keys(event.data), ['timestamp', 'id', 'referrer', 'browser', 'userAgent', 'ip', 'instance', 'labels', 'method', 'path', 'query', 'statusCode', 'pid', 'error'], 'includes data about the request');
+    t.deepEqual(Object.keys(event.data), ['id', 'referrer', 'browser', 'userAgent', 'ip', 'method', 'path', 'query', 'statusCode', 'error'], 'includes data about the request');
     await server.stop();
     t.end();
   });

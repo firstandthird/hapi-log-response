@@ -2,13 +2,24 @@ const Hoek = require('hoek');
 const useragent = require('useragent');
 
 const defaults = {
-  excludeStatus: [200, 204, 304],
+  excludeStatus: [],
   tags: ['detailed-response']
 };
 
 const register = (server, options) => {
   options = Hoek.applyToDefaults(defaults, options);
 
+  const getLogData = (request, statusCode) => ({
+    id: request.info.id,
+    referrer: request.info.referrer,
+    browser: useragent.parse(request.headers['user-agent']).toString(),
+    userAgent: request.headers['user-agent'],
+    ip: request.info.remoteAddress,
+    method: request.method,
+    path: request.path,
+    query: Object.assign({}, request.query),
+    statusCode,
+  });
   // log HTTP 301/302 redirects and 404's here:
   server.events.on({ name: 'response' }, (request) => {
     // individual routes can disable response logging:
@@ -22,21 +33,7 @@ const register = (server, options) => {
     }
 
     const tags = [].concat(options.tags);
-    const data = {
-      timestamp: request.info.received,
-      id: request.id,
-      referrer: request.info.referrer,
-      browser: useragent.parse(request.headers['user-agent']).toString(),
-      userAgent: request.headers['user-agent'],
-      ip: request.info.remoteAddress,
-      instance: request.server.info.uri,
-      labels: request.server.settings.labels,
-      method: request.method,
-      path: request.path,
-      query: Object.assign({}, request.query),
-      statusCode,
-      pid: process.pid,
-    };
+    const data = getLogData(request, statusCode);
     if ([301, 302].includes(statusCode)) {
       tags.push('redirect');
       data.redirectTo = request.response.headers.location;
@@ -69,21 +66,7 @@ const register = (server, options) => {
       } else if (statusCode >= 500) {
         tags.push('server-error');
       }
-      const data = {
-        timestamp: request.info.received,
-        id: request.id,
-        referrer: request.info.referrer,
-        browser: useragent.parse(request.headers['user-agent']).toString(),
-        userAgent: request.headers['user-agent'],
-        ip: request.info.remoteAddress,
-        instance: request.server.info.uri,
-        labels: request.server.settings.labels,
-        method: request.method,
-        path: request.path,
-        query: Object.assign({}, request.query),
-        statusCode,
-        pid: process.pid,
-      };
+      const data = getLogData(request, statusCode);
       if (event && event.error) {
         data.error = event.error;
       }
