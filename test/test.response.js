@@ -157,7 +157,10 @@ test('does not log not-found errors as user-errors', async (t) => {
     }
   ]);
   let logCount = 0;
-  server.events.on('log', (event, tags) => logCount++);
+  server.events.on('log', (event, tags) => {
+    t.equal(tags['user-error'], undefined);
+    logCount++;
+  });
   await server.start();
   const response = await server.inject({ url: '/breaking' });
   await wait(500);
