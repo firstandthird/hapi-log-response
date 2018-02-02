@@ -56,6 +56,10 @@ const register = (server, options) => {
         return;
       }
       const statusCode = event.error.output.statusCode;
+      // skip 404's, they are covered by the response handler:
+      if (statusCode === 404) {
+        return;
+      }
       // ignore excluded statuses:
       if (options.excludeStatus.includes(statusCode)) {
         return;
