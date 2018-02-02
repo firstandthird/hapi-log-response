@@ -142,6 +142,31 @@ test('logs not-found errors', async (t) => {
   t.equal(response.statusCode, 404);
 });
 
+test('does not log not-found errors as user-errors', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('vision') },
+    { plugin: require('../'),
+      options: {
+      }
+    }
+  ]);
+  let logCount = 0;
+  server.events.on('log', (event, tags) => logCount++);
+  await server.start();
+  const response = await server.inject({ url: '/breaking' });
+  await wait(500);
+  t.equal(response.statusCode, 404);
+  t.equal(logCount, 1);
+  await server.stop();
+  t.end();
+});
+
 test('does not log user errors responses', async (t) => {
   const server = new Hapi.Server({
     debug: {
