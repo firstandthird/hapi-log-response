@@ -72,7 +72,12 @@ const register = (server, options) => {
       }
       const data = getLogData(request, statusCode);
       if (event && event.error) {
-        data.error = event.error;
+        data.error = {
+          message: event.error.message,
+          stack: event.error.stack,
+          data: event.error.data,
+          output: event.error.output
+        };
       }
       server.log(tags, data);
     }
