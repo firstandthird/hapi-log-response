@@ -3,23 +3,29 @@ const useragent = require('useragent');
 
 const defaults = {
   excludeStatus: [],
+  includeId: false,
   tags: ['detailed-response']
 };
 
 const register = (server, options) => {
   options = Hoek.applyToDefaults(defaults, options);
 
-  const getLogData = (request, statusCode) => ({
-    id: request.info.id,
-    referrer: request.info.referrer,
-    browser: useragent.parse(request.headers['user-agent']).toString(),
-    userAgent: request.headers['user-agent'],
-    ip: request.info.remoteAddress,
-    method: request.method,
-    path: request.path,
-    query: Object.assign({}, request.query),
-    statusCode,
-  });
+  const getLogData = (request, statusCode) => {
+    const logData = {
+      referrer: request.info.referrer,
+      browser: useragent.parse(request.headers['user-agent']).toString(),
+      userAgent: request.headers['user-agent'],
+      ip: request.info.remoteAddress,
+      method: request.method,
+      path: request.path,
+      query: Object.assign({}, request.query),
+      statusCode,
+    };
+    if (options.includeId) {
+      logData.id = request.info.id;
+    }
+    return logData;
+  };
   // log HTTP 301/302 redirects and 404's here:
   server.events.on({ name: 'response' }, (request) => {
     // individual routes can disable response logging:
