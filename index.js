@@ -32,7 +32,11 @@ const register = (server, options) => {
     if (request.route.settings.plugins['hapi-log-response'] && request.route.settings.plugins['hapi-log-response'].enabled === false) {
       return;
     }
-    const statusCode = request.response.statusCode;
+    // if the client closed the connection then response will be null:
+    if (!request.response) {
+      return;
+    }
+    const statusCode = request.response ? request.response.statusCode : 500;
     // exit immediately if not logging anything for this response:
     if (![301, 302, 404].includes(statusCode) || options.excludeStatus.includes(statusCode)) {
       return;

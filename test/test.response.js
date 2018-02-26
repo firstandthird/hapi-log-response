@@ -272,6 +272,31 @@ test('does not interfere with routes', async (t) => {
   t.end();
 });
 
+test('does not log when client closes the connection', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+      }
+    }
+  ]);
+  server.events.on('log', (event, tags) => t.fail());
+  await server.start();
+  // simulate a client closed response event:
+  server.events.emit('response', {
+    response: null,
+    route: { settings: { plugins: {} } }
+  });
+  await wait(300);
+  await server.stop();
+  t.end();
+});
+
 test('passes custom error data', async (t) => {
   const server = new Hapi.Server({
     debug: {
