@@ -2,6 +2,9 @@ const Hoek = require('hoek');
 const useragent = require('useragent');
 
 const defaults = {
+  // some server errors emit two request events,
+  // by default make sure we only respond to the one with 'handler':
+  requiredTags: ['handler'],
   excludeStatus: [],
   includeId: false,
   tags: ['detailed-response']
@@ -61,8 +64,20 @@ const register = (server, options) => {
       return;
     }
     if (event.error && event.error.output) {
-      // some server errors emit two request events, make sure we are responding to only one:
-      if (!event.tags.includes('handler')) {
+      // make sure it has at least one of the requiredTags:
+      let matched = false;
+      for (let i = 0; i < options.requiredTags.length; i++) {
+        if (Array.isArray(event.tags)) {
+          if (event.tags.includes(options.requiredTags[i])) {
+            matched = true;
+            break;
+          }
+        } else if (event.tags[options.requiredTags[i]]) {
+          matched = true;
+          break;
+        }
+      }
+      if (options.requiredTags.length > 0 && !matched) {
         return;
       }
       const statusCode = event.error.output.statusCode;
