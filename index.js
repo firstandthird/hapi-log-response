@@ -10,6 +10,8 @@ const defaults = {
   tags: ['detailed-response']
 };
 
+const contains = (arr1, arr2) => arr1.some(item => arr2.includes(item));
+
 const register = (server, options) => {
   options = Hoek.applyToDefaults(defaults, options);
 
@@ -64,20 +66,9 @@ const register = (server, options) => {
       return;
     }
     if (event.error && event.error.output) {
-      // make sure it has at least one of the requiredTags:
-      let matched = false;
-      for (let i = 0; i < options.requiredTags.length; i++) {
-        if (Array.isArray(event.tags)) {
-          if (event.tags.includes(options.requiredTags[i])) {
-            matched = true;
-            break;
-          }
-        } else if (event.tags[options.requiredTags[i]]) {
-          matched = true;
-          break;
-        }
-      }
-      if (options.requiredTags.length > 0 && !matched) {
+      // ignore if required tags were specified, but none of them match any of the event tags:
+      const tagArray = Array.isArray(event.tags) ? event.tags : Object.keys(event.tags);
+      if (options.requiredTags.length > 0 && !contains(options.requiredTags, tagArray)) {
         return;
       }
       const statusCode = event.error.output.statusCode;
