@@ -233,14 +233,18 @@ test('logs server errors', async (t) => {
       }
     }
   ]);
-  server.events.on('log', async (event, tags) => {
+  let seen = false;
+  server.events.on('log', (event, tags) => {
     t.equal(tags['server-error'], true);
-    await server.stop();
-    t.end();
+    seen = true;
   });
   await server.start();
   const response = await server.inject({ url: '/breaking' });
   t.equal(response.statusCode, 500);
+  await wait(500);
+  t.equal(seen, true);
+  await server.stop();
+  t.end();
 });
 
 test('does not interfere with routes', async (t) => {
@@ -436,4 +440,76 @@ test('options.includeId will also include the request id', async (t) => {
   await server.start();
   await server.inject({ url: '/justYourAverageRoute' });
   await wait(500);
+});
+
+test('options.requiredTags controls what tags will trigger a log', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+        requiredTags: ['internal'], // this will not log the handler error
+      }
+    }
+  ]);
+  server.route([
+    {
+      method: 'GET',
+      path: '/breaking',
+      handler(request, h) {
+        const a = {};
+        a.b.c = 1234;
+      }
+    }
+  ]);
+  server.events.on('log', (event, tags) => {
+    t.notEqual(tags.handler, true);
+  });
+  await server.start();
+  const response = await server.inject({ url: '/breaking' });
+  t.equal(response.statusCode, 500);
+  await wait(500);
+  await server.stop();
+  t.end();
+});
+
+test('options.requiredTags just logs everything if set to empty', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+        requiredTags: [], // this will log all server errors, not just the handler errors
+      }
+    }
+  ]);
+  server.route([
+    {
+      method: 'GET',
+      path: '/breaking',
+      handler(request, h) {
+        const a = {};
+        a.b.c = 1234;
+      }
+    }
+  ]);
+  let called = 0;
+  server.events.on('log', (event, tags) => {
+    called++;
+  });
+  await server.start();
+  const response = await server.inject({ url: '/breaking' });
+  t.equal(response.statusCode, 500);
+  await wait(500);
+  t.equal(called, 2, 'sends out both handler and server log messages');
+  await server.stop();
+  t.end();
 });
