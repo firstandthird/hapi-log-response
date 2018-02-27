@@ -466,7 +466,7 @@ test('options.requiredTags controls what tags will trigger a log', async (t) => 
       }
     }
   ]);
-  server.events.on('log', async (event, tags) => {
+  server.events.on('log', (event, tags) => {
     t.notEqual(tags.handler, true);
   });
   await server.start();
