@@ -513,3 +513,42 @@ test('options.requiredTags just logs everything if set to empty', async (t) => {
   await server.stop();
   t.end();
 });
+
+test('options.verbose logs all request events', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+        verbose: true
+      }
+    }
+  ]);
+  server.route({
+    method: 'GET',
+    path: '/error',
+    handler(request, h) {
+      // simulate an accept-encoding event:
+      request._log(['accept-encoding', 'error'], new Error('did not accept'));
+    }
+  });
+  server.events.on('log', async (event, tags) => {
+    console.log('+')
+    console.log('+')
+    console.log('+')
+    console.log('+')
+    console.log(tags)
+    // t.ok(tags['accept-encoding']);
+    await server.stop();
+    t.end();
+  });
+  await server.start();
+  try {
+    await server.inject({ url: '/error' });
+  } catch (e) {
+  }
+});

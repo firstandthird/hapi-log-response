@@ -69,7 +69,7 @@ const register = (server, options) => {
     if (event.error && event.error.output) {
       // ignore if required tags were specified, but none of them match any of the event tags:
       const tagArray = Array.isArray(event.tags) ? event.tags : Object.keys(event.tags);
-      if (options.requiredTags.length > 0 && !contains(options.requiredTags, tagArray)) {
+      if (!options.verbose && options.requiredTags.length > 0 && !contains(options.requiredTags, tagArray)) {
         return;
       }
       const statusCode = event.error.output.statusCode;
@@ -96,12 +96,6 @@ const register = (server, options) => {
           output: event.error.output
         };
       }
-      server.log(tags, data);
-    }
-    const verboseTags = ['unauthenticated'];
-    if (options.verbose && Object.keys(eventTags).some(tag => verboseTags.contains(tag))) {
-      const data = getLogData(request, 401);
-      const tags = [].concat(options.tags);
       server.log(tags, data);
     }
   });
