@@ -66,13 +66,14 @@ const register = (server, options) => {
     if (request.route.settings.plugins['hapi-log-response'] && request.route.settings.plugins['hapi-log-response'].enabled === false) {
       return;
     }
-    if (event.error && event.error.output) {
+    if (options.verbose || (event.error && event.error.output)) {
       // ignore if required tags were specified, but none of them match any of the event tags:
       const tagArray = Array.isArray(event.tags) ? event.tags : Object.keys(event.tags);
       if (!options.verbose && options.requiredTags.length > 0 && !contains(options.requiredTags, tagArray)) {
         return;
       }
-      const statusCode = event.error.output.statusCode;
+      // the only request events that have no error are unauthorized:
+      const statusCode = event.error ? event.error.output.statusCode : 401;
       // skip 404's, they are covered by the response handler:
       if (statusCode === 404) {
         return;
@@ -95,6 +96,10 @@ const register = (server, options) => {
           data: event.error.data,
           output: event.error.output
         };
+      }
+      // in verbose mode we might want to log the original tags:
+      if (options.verbose) {
+        data.eventTags = eventTags;
       }
       server.log(tags, data);
     }

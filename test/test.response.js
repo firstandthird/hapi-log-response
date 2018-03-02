@@ -532,23 +532,22 @@ test('options.verbose logs all request events', async (t) => {
     method: 'GET',
     path: '/error',
     handler(request, h) {
-      // simulate an accept-encoding event:
-      request._log(['accept-encoding', 'error'], new Error('did not accept'));
+      // simulate a 'no authentication scheme' event
+      request.auth.isAuthenticated = false;
+      request.auth.credentials = null;
+      request.error = boom.unauthorized();
+      request._log(['auth', 'unauthenticated']);
+      return h.response('not authenticated').code(401);
     }
   });
   server.events.on('log', async (event, tags) => {
-    console.log('+')
-    console.log('+')
-    console.log('+')
-    console.log('+')
-    console.log(tags)
-    // t.ok(tags['accept-encoding']);
+    t.ok(tags['user-error']);
+    t.ok(event.data.eventTags.auth, 'verbose mode includes original tags');
+    t.ok(event.data.eventTags.unauthenticated, 'verbose mode includes original tags');
     await server.stop();
     t.end();
   });
   await server.start();
-  try {
-    await server.inject({ url: '/error' });
-  } catch (e) {
-  }
+  await server.inject({ url: '/error' });
+  await wait(1000);
 });
