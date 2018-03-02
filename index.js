@@ -17,7 +17,6 @@ const register = (server, options) => {
 
   const getLogData = (request, statusCode) => {
     const logData = {
-      referrer: request.info.referrer,
       browser: useragent.parse(request.headers['user-agent']).toString(),
       userAgent: request.headers['user-agent'],
       ip: request.info.remoteAddress,
@@ -26,6 +25,9 @@ const register = (server, options) => {
       query: Object.assign({}, request.query),
       statusCode,
     };
+    if (request.info.referrer) {
+      logData.referrer = request.info.referrer;
+    }
     if (options.includeId) {
       logData.id = request.info.id;
     }

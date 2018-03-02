@@ -26,7 +26,7 @@ test('logs errors responses', async (t) => {
   });
   server.events.on('log', async (event, tags) => {
     t.deepEqual(tags, { 'detailed-response': true, 'user-error': true }, 'returns the right tags');
-    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'ip', 'method', 'path', 'query', 'statusCode', 'error'], 'includes data about the request');
+    t.deepEqual(Object.keys(event.data), ['browser', 'userAgent', 'ip', 'method', 'path', 'query', 'statusCode', 'error'], 'includes data about the request');
     t.equal(event.data.error.message, 'bad bad bad');
     t.equal(event.data.error.stack.startsWith('Error: bad bad bad'), true);
     t.deepEqual(event.data.error.output, {
@@ -400,7 +400,7 @@ test('options.requests logs a response for every request', async (t) => {
   });
   server.events.on('log', async (event, tags) => {
     t.deepEqual(tags, { 'detailed-response': true }, 'returns the right tags');
-    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'ip', 'method', 'path', 'query', 'statusCode'], 'includes data about the request');
+    t.deepEqual(Object.keys(event.data), ['browser', 'userAgent', 'ip', 'method', 'path', 'query', 'statusCode'], 'includes data about the request');
     await server.stop();
     t.end();
   });
@@ -433,7 +433,7 @@ test('options.includeId will also include the request id', async (t) => {
   });
   server.events.on('log', async (event, tags) => {
     t.deepEqual(tags, { 'detailed-response': true }, 'returns the right tags');
-    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'ip', 'method', 'path', 'query', 'statusCode', 'id'], 'includes data about the request');
+    t.deepEqual(Object.keys(event.data), ['browser', 'userAgent', 'ip', 'method', 'path', 'query', 'statusCode', 'id'], 'includes data about the request');
     await server.stop();
     t.end();
   });
@@ -510,6 +510,54 @@ test('options.requiredTags just logs everything if set to empty', async (t) => {
   t.equal(response.statusCode, 500);
   await wait(500);
   t.equal(called, 2, 'sends out both handler and server log messages');
+  await server.stop();
+  t.end();
+});
+
+test('referrer is included if available in request', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+        requests: true
+      }
+    }
+  ]);
+  let withReferrer = false;
+  let without = false;
+  server.events.on('log', (event, tags) => {
+    if (event.data.referrer === 'a mysterious hermit') {
+      withReferrer = true;
+    } else {
+      without = true;
+    }
+  });
+  await server.start();
+  server.events.emit('response', {
+    path: 'p1',
+    route: { settings: { plugins: {} } },
+    response: true,
+    headers: {},
+    info: {
+      referrer: 'a mysterious hermit'
+    },
+    statusCode: 200
+  });
+  server.events.emit('response', {
+    path: 'p1',
+    route: { settings: { plugins: {} } },
+    response: true,
+    headers: {},
+    info: {},
+  });
+  await wait(2000);
+  t.ok(withReferrer);
+  t.ok(without);
   await server.stop();
   t.end();
 });
