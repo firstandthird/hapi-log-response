@@ -7,7 +7,8 @@ const defaults = {
   requiredTags: ['handler'],
   excludeStatus: [],
   includeId: false,
-  tags: ['detailed-response']
+  tags: ['detailed-response'],
+  verbose: false
 };
 
 const contains = (arr1, arr2) => arr1.some(item => arr2.includes(item));
@@ -95,6 +96,12 @@ const register = (server, options) => {
           output: event.error.output
         };
       }
+      server.log(tags, data);
+    }
+    const verboseTags = ['unauthenticated'];
+    if (options.verbose && Object.keys(eventTags).some(tag => verboseTags.contains(tag))) {
+      const data = getLogData(request, 401);
+      const tags = [].concat(options.tags);
       server.log(tags, data);
     }
   });
