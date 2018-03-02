@@ -513,3 +513,41 @@ test('options.requiredTags just logs everything if set to empty', async (t) => {
   await server.stop();
   t.end();
 });
+
+test('options.verbose logs all request events', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+        verbose: true
+      }
+    }
+  ]);
+  server.route({
+    method: 'GET',
+    path: '/error',
+    handler(request, h) {
+      // simulate a 'no authentication scheme' event
+      request.auth.isAuthenticated = false;
+      request.auth.credentials = null;
+      request.error = boom.unauthorized();
+      request._log(['auth', 'unauthenticated']);
+      return h.response('not authenticated').code(401);
+    }
+  });
+  server.events.on('log', async (event, tags) => {
+    t.ok(tags['user-error']);
+    t.ok(event.data.eventTags.auth, 'verbose mode includes original tags');
+    t.ok(event.data.eventTags.unauthenticated, 'verbose mode includes original tags');
+    await server.stop();
+    t.end();
+  });
+  await server.start();
+  await server.inject({ url: '/error' });
+  await wait(1000);
+});
