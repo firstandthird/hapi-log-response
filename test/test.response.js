@@ -531,7 +531,7 @@ test('referrer is included if available in request', async (t) => {
   let withReferrer = false;
   let without = false;
   server.events.on('log', (event, tags) => {
-    if (event.data.referrer === 'a skeezy old man') {
+    if (event.data.referrer === 'a mysterious hermit') {
       withReferrer = true;
     } else {
       without = true;
@@ -544,7 +544,7 @@ test('referrer is included if available in request', async (t) => {
     response: true,
     headers: {},
     info: {
-      referrer: 'a skeezy old man'
+      referrer: 'a mysterious hermit'
     },
     statusCode: 200
   });
