@@ -4,7 +4,7 @@ const useragent = require('useragent');
 const defaults = {
   // some server errors emit two request events,
   // by default make sure we only respond to the one with 'handler':
-  requiredTags: ['handler'],
+  requiredTags: [],
   excludeStatus: [],
   includeId: false,
   tags: ['detailed-response']
