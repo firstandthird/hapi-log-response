@@ -1,5 +1,6 @@
 const Hoek = require('hoek');
 const useragent = require('useragent');
+const isBot = require('isbot');
 
 const defaults = {
   // some server errors emit two request events,
@@ -20,6 +21,7 @@ const register = (server, options) => {
       referrer: request.info.referrer,
       browser: useragent.parse(request.headers['user-agent']).toString(),
       userAgent: request.headers['user-agent'],
+      isBot: isBot(request.headers['user-agent']),
       ip: request.info.remoteAddress,
       method: request.method,
       path: request.path,

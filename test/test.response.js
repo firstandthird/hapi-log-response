@@ -26,7 +26,7 @@ test('logs errors responses', async (t) => {
   });
   server.events.on('log', async (event, tags) => {
     t.deepEqual(tags, { 'detailed-response': true, 'user-error': true }, 'returns the right tags');
-    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'ip', 'method', 'path', 'query', 'statusCode', 'error'], 'includes data about the request');
+    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'statusCode', 'error'], 'includes data about the request');
     t.equal(event.data.error.message, 'bad bad bad');
     t.equal(event.data.error.stack.startsWith('Error: bad bad bad'), true);
     t.deepEqual(event.data.error.output, {
@@ -400,7 +400,7 @@ test('options.requests logs a response for every request', async (t) => {
   });
   server.events.on('log', async (event, tags) => {
     t.deepEqual(tags, { 'detailed-response': true }, 'returns the right tags');
-    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'ip', 'method', 'path', 'query', 'statusCode'], 'includes data about the request');
+    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'statusCode'], 'includes data about the request');
     await server.stop();
     t.end();
   });
@@ -433,7 +433,7 @@ test('options.includeId will also include the request id', async (t) => {
   });
   server.events.on('log', async (event, tags) => {
     t.deepEqual(tags, { 'detailed-response': true }, 'returns the right tags');
-    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'ip', 'method', 'path', 'query', 'statusCode', 'id'], 'includes data about the request');
+    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'statusCode', 'id'], 'includes data about the request');
     await server.stop();
     t.end();
   });
