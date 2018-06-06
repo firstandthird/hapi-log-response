@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "hoek": "4.1.0",
+    "isbot": "^2.1.2",
     "useragent": "^2.2.1"
   },
   "eslintConfig": {
