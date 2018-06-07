@@ -1,6 +1,7 @@
 const test = require('tap').test;
 const Hapi = require('hapi');
 const boom = require('boom');
+const wreck = require('wreck');
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -511,5 +512,43 @@ test('options.requiredTags just logs everything if set to empty', async (t) => {
   await wait(500);
   t.equal(called, 2, 'sends out both handler and server log messages');
   await server.stop();
+  t.end();
+});
+
+test('huge wreck errors are truncated', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+      }
+    }
+  ]);
+  server.route({
+    method: 'GET',
+    path: '/badRequest',
+    handler(request, h) {
+      throw boom.badRequest('bad request');
+    }
+  });
+  server.route({
+    method: 'GET',
+    path: '/error',
+    async handler(request, h) {
+      await wreck.get('http://localhost:8080/badRequest');
+    }
+  });
+  const responses = [];
+  server.events.on('log', async (event, tags) => {
+    responses.push(event.data.error.data);
+    await server.stop();
+  });
+  await server.start();
+  await server.inject({ url: '/error' });
+  t.match(responses, [null, '[response object is truncated]']);
   t.end();
 });

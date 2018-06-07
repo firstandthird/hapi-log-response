@@ -89,6 +89,9 @@ const register = (server, options) => {
         tags.push('server-error');
       }
       const data = getLogData(request, statusCode);
+      if (event && event.error && event.error.data && event.error.data.isResponseError) {
+        event.error.data = '[response object is truncated]';
+      }
       if (event && event.error) {
         data.error = {
           message: event.error.message,
