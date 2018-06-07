@@ -548,7 +548,12 @@ test('huge wreck errors are truncated', async (t) => {
     await server.stop();
   });
   await server.start();
-  await server.inject({ url: '/error' });
-  t.match(responses, [null, '[response object is truncated]']);
+  await server.inject({ method: 'get', url: '/error' });
+  t.match(responses[1], {
+    path: '/badRequest',
+    method: 'GET',
+    statusCode: 400,
+    statusMessage: 'Bad Request'
+  });
   t.end();
 });

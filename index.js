@@ -89,8 +89,14 @@ const register = (server, options) => {
         tags.push('server-error');
       }
       const data = getLogData(request, statusCode);
+      // if it is a wreck response it includes the entire response object, which is too big:
       if (event && event.error && event.error.data && event.error.data.isResponseError) {
-        event.error.data = '[response object is truncated]';
+        event.error.data = {
+          path: event.error.data.res.req.path,
+          method: event.error.data.res.req.method,
+          statusCode: event.error.data.res.statusCode,
+          statusMessage: event.error.data.res.statusMessage
+        };
       }
       if (event && event.error) {
         data.error = {
