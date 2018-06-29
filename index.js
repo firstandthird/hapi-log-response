@@ -8,6 +8,7 @@ const defaults = {
   requiredTags: [],
   excludeStatus: [],
   includeId: false,
+  includeEventTags: false,
   tags: ['detailed-response']
 };
 
@@ -82,7 +83,11 @@ const register = (server, options) => {
       if (options.excludeStatus.includes(statusCode)) {
         return;
       }
-      const tags = [].concat(options.tags);
+      let tags = [].concat(options.tags);
+      if (options.includeEventTags) {
+        tags = tags.concat(tagArray);
+      }
+
       if (statusCode >= 400 && statusCode < 500) {
         tags.push('user-error');
       } else if (statusCode >= 500) {

@@ -43,6 +43,45 @@ test('logs errors responses', async (t) => {
   await server.inject({ url: '/error' });
 });
 
+test('logs errors responses, option to include hapi tags', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      //request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+        includeEventTags: true
+      }
+    }
+  ]);
+  server.route({
+    method: 'GET',
+    path: '/error',
+    handler(request, h) {
+      throw boom.badRequest('bad bad bad');
+    }
+  });
+  server.events.on('log', async (event, tags) => {
+    t.deepEqual(tags, { 'detailed-response': true, error: true, handler: true, 'user-error': true }, 'returns the right tags');
+    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'statusCode', 'error'], 'includes data about the request');
+    t.equal(event.data.error.message, 'bad bad bad');
+    t.equal(event.data.error.stack.startsWith('Error: bad bad bad'), true);
+    t.deepEqual(event.data.error.output, {
+      statusCode: 400,
+      payload: { statusCode: 400, error: 'Bad Request', message: 'bad bad bad' },
+      headers: {}
+    });
+    t.deepEqual(Object.keys(event.data.error), ['message', 'stack', 'data', 'output']);
+    await server.stop();
+    t.end();
+  });
+  await server.start();
+  await server.inject({ url: '/error' });
+});
+
 test('individual routes can disable plugin', async (t) => {
   const server = new Hapi.Server({
     debug: {
