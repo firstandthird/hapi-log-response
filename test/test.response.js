@@ -8,7 +8,7 @@ const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 test('logs errors responses', async (t) => {
   const server = new Hapi.Server({
     debug: {
-      request: ['error']
+      //request: ['error']
     },
     port: 8080
   });
@@ -85,7 +85,7 @@ test('logs errors responses, option to include hapi tags', async (t) => {
 test('individual routes can disable plugin', async (t) => {
   const server = new Hapi.Server({
     debug: {
-      request: ['error']
+      //request: ['error']
     },
     port: 8080
   });
@@ -123,7 +123,7 @@ test('individual routes can disable plugin', async (t) => {
 test('logs redirects', async (t) => {
   const server = new Hapi.Server({
     debug: {
-      request: ['error']
+      //request: ['error']
     },
     port: 8080
   });
@@ -162,7 +162,7 @@ test('logs redirects', async (t) => {
 test('logs not-found errors', async (t) => {
   const server = new Hapi.Server({
     debug: {
-      request: ['error']
+      //request: ['error']
     },
     port: 8080
   });
@@ -193,7 +193,7 @@ test('logs not-found errors', async (t) => {
 test('does not log not-found errors as user-errors', async (t) => {
   const server = new Hapi.Server({
     debug: {
-      request: ['error']
+      //request: ['error']
     },
     port: 8080
   });
@@ -221,7 +221,7 @@ test('does not log not-found errors as user-errors', async (t) => {
 test('does not log user errors responses', async (t) => {
   const server = new Hapi.Server({
     debug: {
-      request: ['error']
+      //request: ['error']
     },
     port: 8080
   });
@@ -253,7 +253,7 @@ test('does not log user errors responses', async (t) => {
 test('logs server errors', async (t) => {
   const server = new Hapi.Server({
     debug: {
-      request: ['error']
+      //request: ['error']
     },
     port: 8080
   });
@@ -290,7 +290,7 @@ test('logs server errors', async (t) => {
 test('does not interfere with routes', async (t) => {
   const server = new Hapi.Server({
     debug: {
-      request: ['error']
+      //request: ['error']
     },
     port: 8080
   });
@@ -319,7 +319,7 @@ test('does not interfere with routes', async (t) => {
 test('does not log when client closes the connection', async (t) => {
   const server = new Hapi.Server({
     debug: {
-      request: ['error']
+      //request: ['error']
     },
     port: 8080
   });
@@ -344,7 +344,7 @@ test('does not log when client closes the connection', async (t) => {
 test('passes custom error data', async (t) => {
   const server = new Hapi.Server({
     debug: {
-      request: ['error']
+      //request: ['error']
     },
     port: 8080
   });
@@ -381,7 +381,7 @@ test('passes custom error data', async (t) => {
 test('options.excludeStatus', async (t) => {
   const server = new Hapi.Server({
     debug: {
-      request: ['error']
+      //request: ['error']
     },
     port: 8080
   });
@@ -420,7 +420,7 @@ test('options.excludeStatus', async (t) => {
 test('options.requests logs a response for every request', async (t) => {
   const server = new Hapi.Server({
     debug: {
-      request: ['error']
+      //request: ['error']
     },
     port: 8080
   });
@@ -452,7 +452,7 @@ test('options.requests logs a response for every request', async (t) => {
 test('options.includeId will also include the request id', async (t) => {
   const server = new Hapi.Server({
     debug: {
-      request: ['error']
+      //request: ['error']
     },
     port: 8080
   });
@@ -485,7 +485,7 @@ test('options.includeId will also include the request id', async (t) => {
 test('options.requiredTags controls what tags will trigger a log', async (t) => {
   const server = new Hapi.Server({
     debug: {
-      request: ['error']
+      //request: ['error']
     },
     port: 8080
   });
@@ -520,7 +520,7 @@ test('options.requiredTags controls what tags will trigger a log', async (t) => 
 test('options.requiredTags just logs everything if set to empty', async (t) => {
   const server = new Hapi.Server({
     debug: {
-      request: ['error']
+      //request: ['error']
     },
     port: 8080
   });
@@ -557,7 +557,7 @@ test('options.requiredTags just logs everything if set to empty', async (t) => {
 test('huge wreck errors are truncated', async (t) => {
   const server = new Hapi.Server({
     debug: {
-      request: ['error']
+      //request: ['error']
     },
     port: 8080
   });
