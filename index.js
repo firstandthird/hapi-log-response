@@ -8,6 +8,7 @@ const defaults = {
   requiredTags: [],
   excludeStatus: [],
   includeId: false,
+  ignoreUnauthorizedTry: false,
   includeEventTags: false,
   tags: ['detailed-response']
 };
@@ -78,6 +79,12 @@ const register = (server, options) => {
       // skip 404's, they are covered by the response handler:
       if (statusCode === 404) {
         return;
+      }
+      // if ignoreUnauthorizedTry is true then don't report 401's that have 'try' modeauthwe
+      if (options.ignoreUnauthorizedTry && statusCode === 401) {
+        if (request.route.settings.auth && request.route.settings.auth.mode === 'try') {
+          return;
+        }
       }
       // ignore excluded statuses:
       if (options.excludeStatus.includes(statusCode)) {

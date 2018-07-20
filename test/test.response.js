@@ -596,3 +596,66 @@ test('huge wreck errors are truncated', async (t) => {
   });
   t.end();
 });
+
+test('options.ignoreUnauthorizedTry', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      //request: ['error']
+    },
+    port: 8080
+  });
+  const scheme = function () {
+    return {
+      authenticate(request, h) {
+        throw boom.unauthorized(null, 'Custom');
+      }
+    };
+  };
+  server.auth.scheme('custom', scheme);
+  server.auth.strategy('default', 'custom');
+
+  await server.register([
+    {
+      plugin: require('../'),
+      options: {
+        ignoreUnauthorizedTry: true
+      }
+    }
+  ]);
+  server.route({
+    method: 'GET',
+    path: '/strategery',
+    config: {
+      auth: {
+        strategy: 'default',
+        mode: 'try'
+      }
+    },
+    handler(request, h) {
+      return '/ok';
+    }
+  });
+  server.route({
+    method: 'GET',
+    path: '/noStrategery',
+    config: {
+      auth: {
+        strategy: 'default',
+      }
+    },
+    handler(request, h) {
+      return '/ok';
+    }
+  });
+  let count = 0;
+  server.events.on('log', (event, tags) => {
+    count++;
+  });
+  await server.start();
+  await server.inject({ url: '/strategery' });
+  await server.inject({ url: '/noStrategery' });
+  await wait(2000);
+  t.equal(count, 1, 'only logs when mode is not "try"');
+  await server.stop();
+  t.end();
+});
