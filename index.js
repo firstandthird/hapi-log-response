@@ -82,7 +82,7 @@ const register = (server, options) => {
       }
       // if ignoreUnauthorizedTry is true then don't report 401's that have 'try' mode
       if (options.ignoreUnauthorizedTry && statusCode === 401) {
-        if (request.route.settings.auth && request.route.settings.auth.mode === 'try') {
+        if (event.tags.includes('try')) {
           return;
         }
       }
