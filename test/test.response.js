@@ -596,3 +596,70 @@ test('huge wreck errors are truncated', async (t) => {
   });
   t.end();
 });
+
+test('options.ignoreUnauthorizedTry', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      request: ['user-error']
+    },
+    port: 8080
+  });
+  const scheme = function () {
+    return {
+      authenticate(request, h) {
+        return boom.unauthorized();
+        // failure statements like this one won't work however as the 'try' tag won't be present:
+        // return h.unauthenticated(boom.unauthorized(null, 'cookie'));
+      }
+    };
+  };
+  server.auth.scheme('custom', scheme);
+  server.auth.strategy('microauth', 'custom');
+  await server.register(
+    {
+      plugin: require('../'),
+      options: {
+        ignoreUnauthorizedTry: true
+      }
+    }
+  );
+  server.route({
+    method: 'GET',
+    path: '/strategery',
+    config: {
+      auth: {
+        strategy: 'microauth',
+        mode: 'try'
+      }
+    },
+    handler(request, h) {
+      return '/ok';
+    }
+  });
+  server.route({
+    method: 'GET',
+    path: '/noStrategery',
+    config: {
+      auth: {
+        strategy: 'microauth',
+      }
+    },
+    handler(request, h) {
+      return '/ok';
+    }
+  });
+
+  let count = 0;
+  server.events.on('log', (event, tags) => {
+    t.notOk(tags.try, 'authentication failure does not log if "try" tag included');
+    count++;
+  });
+  await server.start();
+  const first = await server.inject({ url: '/strategery' });
+  t.equal(first.statusCode, 200, 'try strategy returns OK even if failed to auth');
+  await server.inject({ url: '/noStrategery' });
+  await wait(2000);
+  t.equal(count, 1, 'only logs when mode is not "try"');
+  await server.stop();
+  t.end();
+});
