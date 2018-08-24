@@ -56,9 +56,11 @@ const register = (server, options) => {
     if ([301, 302].includes(statusCode)) {
       tags.push('redirect');
       data.redirectTo = request.response.headers.location;
+      data.message = `HTTP ${statusCode} Redirect from ${request.url.path} to ${data.redirectTo}`;
     } else {
       // everything else is a 404:
       tags.push('not-found');
+      data.message = `HTTP 404 ${request.url.path} was not found`;
     }
     server.log(tags, data);
   });
@@ -95,12 +97,13 @@ const register = (server, options) => {
         tags = tags.concat(tagArray);
       }
 
+      const data = getLogData(request, statusCode);
       if (statusCode >= 400 && statusCode < 500) {
         tags.push('user-error');
       } else if (statusCode >= 500) {
         tags.push('server-error');
       }
-      const data = getLogData(request, statusCode);
+      data.message = `${statusCode} error on path ${request.url.path}`;
       if (event && event.error) {
         // if it is a wreck response it includes the entire response object, which is too big:
         if (event.error.data && event.error.data.isResponseError) {
