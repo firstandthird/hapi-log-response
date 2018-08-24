@@ -27,7 +27,8 @@ test('logs errors responses', async (t) => {
   });
   server.events.on('log', async (event, tags) => {
     t.deepEqual(tags, { 'detailed-response': true, 'user-error': true }, 'returns the right tags');
-    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'statusCode', 'error'], 'includes data about the request');
+    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'statusCode', 'message', 'error'], 'includes data about the request');
+    t.equal(event.data.message, 'bad bad bad');
     t.equal(event.data.error.message, 'bad bad bad');
     t.equal(event.data.error.stack.startsWith('Error: bad bad bad'), true);
     t.deepEqual(event.data.error.output, {
@@ -65,9 +66,10 @@ test('logs errors responses, option to include hapi tags', async (t) => {
     }
   });
   server.events.on('log', async (event, tags) => {
-    t.deepEqual(tags, { 'detailed-response': true, error: true, handler: true, 'user-error': true }, 'returns the right tags');
-    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'statusCode', 'error'], 'includes data about the request');
+    t.deepEqual(tags, { 'detailed-response': true, handler: true, 'user-error': true }, 'returns the right tags');
+    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'statusCode', 'message', 'error'], 'includes data about the request');
     t.equal(event.data.error.message, 'bad bad bad');
+    t.equal(event.data.message, 'bad bad bad');
     t.equal(event.data.error.stack.startsWith('Error: bad bad bad'), true);
     t.deepEqual(event.data.error.output, {
       statusCode: 400,
@@ -152,6 +154,7 @@ test('logs redirects', async (t) => {
   await server.start();
   server.events.on('log', async (event, tags) => {
     t.deepEqual(tags, { 'detailed-response': true, redirect: true });
+    t.equal(event.data.message, 'HTTP 302 Redirect from /redirect to /ok');
     await server.stop();
     t.end();
   });
@@ -182,6 +185,7 @@ test('logs not-found errors', async (t) => {
   });
   server.events.on('log', async (event, tags) => {
     t.equal(tags['not-found'], true);
+    t.equal(event.data.message, 'HTTP 404 /breaking was not found');
     await server.stop();
     t.end();
   });
