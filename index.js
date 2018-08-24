@@ -106,8 +106,12 @@ const register = (server, options) => {
       } else if (statusCode >= 500) {
         tags.push('server-error');
       }
+      // if the event has an error we will use that instead:
       data.message = `${statusCode} error on path ${request.url.path}`;
       if (event && event.error) {
+        if (event.error.message) {
+          data.message = event.error.message;
+        }
         // if it is a wreck response it includes the entire response object, which is too big:
         if (event.error.data && event.error.data.isResponseError) {
           event.error.data = {
