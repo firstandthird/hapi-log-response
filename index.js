@@ -100,6 +100,9 @@ const register = (server, options) => {
       const data = getLogData(request, statusCode);
       if (statusCode >= 400 && statusCode < 500) {
         tags.push('user-error');
+        if (tags.includes('error')) {
+          tags.splice(tags.indexOf('error'), 1);
+        }
       } else if (statusCode >= 500) {
         tags.push('server-error');
       }

@@ -66,7 +66,7 @@ test('logs errors responses, option to include hapi tags', async (t) => {
     }
   });
   server.events.on('log', async (event, tags) => {
-    t.deepEqual(tags, { 'detailed-response': true, error: true, handler: true, 'user-error': true }, 'returns the right tags');
+    t.deepEqual(tags, { 'detailed-response': true, handler: true, 'user-error': true }, 'returns the right tags');
     t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'statusCode', 'message', 'error'], 'includes data about the request');
     t.equal(event.data.error.message, 'bad bad bad');
     t.equal(event.data.message, '400 error on path /error');
