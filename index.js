@@ -50,18 +50,18 @@ const register = (server, options) => {
     if (![301, 302, 404].includes(statusCode) || options.excludeStatus.includes(statusCode)) {
       return;
     }
-
     const tags = [].concat(options.tags);
     const data = getLogData(request, statusCode);
     if ([301, 302].includes(statusCode)) {
       tags.push('redirect');
       data.redirectTo = request.response.headers.location;
-      data.message = `HTTP ${statusCode} Redirect from ${request.url.path} to ${data.redirectTo}`;
+      data.message = `HTTP ${statusCode} Redirect to ${data.redirectTo}`;
     } else {
       // everything else is a 404:
       tags.push('not-found');
-      data.message = `HTTP 404 ${request.url.path} was not found`;
+      data.message = 'HTTP 404 not found';
     }
+    data.message = `${request.url.path}: ${data.message}`;
     server.log(tags, data);
   });
 
@@ -106,6 +106,7 @@ const register = (server, options) => {
       } else if (statusCode >= 500) {
         tags.push('server-error');
       }
+
       // if the event has an error we will use that instead:
       data.message = `${statusCode} error on path ${request.url.path}`;
       if (event && event.error) {
@@ -128,6 +129,27 @@ const register = (server, options) => {
           output: event.error.output
         };
       }
+      // add further tags depending on the error:
+      switch (statusCode) {
+        case 504:
+          tags.push('client-timeout');
+          break;
+        case 503:
+          tags.push('service-unavailable');
+          break;
+        case 400:
+          tags.push('bad-request');
+          break;
+        case 401:
+          tags.push('unauthorized');
+          break;
+        case 500:
+          tags.push('internal-server');
+          break;
+        default:
+          break;
+      }
+      data.message = `${request.url.path}: ${data.message}`;
       server.log(tags, data);
     }
   });
