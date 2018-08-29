@@ -26,9 +26,9 @@ test('logs errors responses', async (t) => {
     }
   });
   server.events.on('log', async (event, tags) => {
-    t.deepEqual(tags, { 'detailed-response': true, 'user-error': true }, 'returns the right tags');
+    t.deepEqual(tags, { 'detailed-response': true, 'user-error': true, 'bad-request': true }, 'returns the right tags');
     t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'statusCode', 'message', 'error'], 'includes data about the request');
-    t.equal(event.data.message, 'bad bad bad');
+    t.equal(event.data.message, '/error: bad bad bad');
     t.equal(event.data.error.message, 'bad bad bad');
     t.equal(event.data.error.stack.startsWith('Error: bad bad bad'), true);
     t.deepEqual(event.data.error.output, {
@@ -66,10 +66,10 @@ test('logs errors responses, option to include hapi tags', async (t) => {
     }
   });
   server.events.on('log', async (event, tags) => {
-    t.deepEqual(tags, { 'detailed-response': true, handler: true, 'user-error': true }, 'returns the right tags');
+    t.deepEqual(tags, { 'detailed-response': true, handler: true, 'user-error': true, 'bad-request': true }, 'returns the right tags');
     t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'statusCode', 'message', 'error'], 'includes data about the request');
     t.equal(event.data.error.message, 'bad bad bad');
-    t.equal(event.data.message, 'bad bad bad');
+    t.equal(event.data.message, '/error: bad bad bad');
     t.equal(event.data.error.stack.startsWith('Error: bad bad bad'), true);
     t.deepEqual(event.data.error.output, {
       statusCode: 400,
@@ -154,7 +154,7 @@ test('logs redirects', async (t) => {
   await server.start();
   server.events.on('log', async (event, tags) => {
     t.deepEqual(tags, { 'detailed-response': true, redirect: true });
-    t.equal(event.data.message, 'HTTP 302 Redirect from /redirect to /ok');
+    t.equal(event.data.message, '/redirect: HTTP 302 Redirect to /ok');
     await server.stop();
     t.end();
   });
@@ -185,13 +185,178 @@ test('logs not-found errors', async (t) => {
   });
   server.events.on('log', async (event, tags) => {
     t.equal(tags['not-found'], true);
-    t.equal(event.data.message, 'HTTP 404 /breaking was not found');
+    t.equal(event.data.message, '/breaking: HTTP 404 not found');
     await server.stop();
     t.end();
   });
   await server.start();
   const response = await server.inject({ url: '/breaking' });
   t.equal(response.statusCode, 404);
+});
+
+test('logs client timeout  errors', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      //request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('vision') },
+    { plugin: require('../'),
+      options: {
+      }
+    }
+  ]);
+  server.route({
+    method: 'get',
+    path: '/breaking',
+    handler(request, h) {
+      throw boom.gatewayTimeout('timeout!');
+    }
+  });
+  server.events.on('log', async (event, tags) => {
+    t.equal(tags['client-timeout'], true);
+    t.equal(event.data.message, '/breaking: timeout!');
+    await server.stop();
+    t.end();
+  });
+  await server.start();
+  const response = await server.inject({ url: '/breaking' });
+  t.equal(response.statusCode, 504);
+});
+
+test('logs service unavailable errors', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      //request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('vision') },
+    { plugin: require('../'),
+      options: {
+      }
+    }
+  ]);
+  server.route({
+    method: 'get',
+    path: '/breaking',
+    handler(request, h) {
+      throw boom.serverUnavailable('unavailable!');
+    }
+  });
+  server.events.on('log', async (event, tags) => {
+    t.equal(tags['service-unavailable'], true);
+    t.equal(event.data.message, '/breaking: unavailable!');
+    await server.stop();
+    t.end();
+  });
+  await server.start();
+  const response = await server.inject({ url: '/breaking' });
+  t.equal(response.statusCode, 503);
+});
+
+test('logs bad request errors', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      //request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('vision') },
+    { plugin: require('../'),
+      options: {
+      }
+    }
+  ]);
+  server.route({
+    method: 'get',
+    path: '/breaking',
+    handler(request, h) {
+      throw boom.badRequest('bad!');
+    }
+  });
+  server.events.on('log', async (event, tags) => {
+    t.equal(tags['bad-request'], true);
+    t.equal(event.data.message, '/breaking: bad!');
+    await server.stop();
+    t.end();
+  });
+  await server.start();
+  const response = await server.inject({ url: '/breaking' });
+  t.equal(response.statusCode, 400);
+});
+
+test('logs unauthorized tag', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      //request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('vision') },
+    { plugin: require('../'),
+      options: {
+      }
+    }
+  ]);
+  server.route({
+    method: 'get',
+    path: '/breaking',
+    handler(request, h) {
+      throw boom.unauthorized('unauthorized!');
+    }
+  });
+  server.events.on('log', async (event, tags) => {
+    t.equal(tags.unauthorized, true);
+    t.equal(event.data.message, '/breaking: unauthorized!');
+    await server.stop();
+    t.end();
+  });
+  await server.start();
+  const response = await server.inject({ url: '/breaking' });
+  t.equal(response.statusCode, 401);
+});
+
+test('logs internal-server tag', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      //request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('vision') },
+    { plugin: require('../'),
+      options: {
+      }
+    }
+  ]);
+  server.route({
+    method: 'get',
+    path: '/breaking',
+    handler(request, h) {
+      throw new Error('error!');
+    }
+  });
+  let called = false;
+  server.events.on('log', async (event, tags) => {
+    if (called) {
+      return;
+    }
+    called = true;
+    t.equal(tags['internal-server'], true);
+    t.equal(event.data.message, '/breaking: error!');
+    await server.stop();
+    t.end();
+  });
+  await server.start();
+  const response = await server.inject({ url: '/breaking' });
+  t.equal(response.statusCode, 500);
 });
 
 test('does not log not-found errors as user-errors', async (t) => {
