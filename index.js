@@ -61,7 +61,7 @@ const register = (server, options) => {
       tags.push('not-found');
       data.message = 'HTTP 404 not found';
     }
-    data.message = `${request.url.path}: ${data.message}`;
+    data.message = `${request.route.path}: ${data.message}`;
     server.log(tags, data);
   });
 

@@ -178,19 +178,19 @@ test('logs not-found errors', async (t) => {
   ]);
   server.route({
     method: 'get',
-    path: '/breaking',
+    path: '/breaking/{param}',
     handler(request, h) {
       return h.response('/breaking').code(404);
     }
   });
   server.events.on('log', async (event, tags) => {
     t.equal(tags['not-found'], true);
-    t.equal(event.data.message, '/breaking: HTTP 404 not found');
+    t.equal(event.data.message, '/breaking/{param}: HTTP 404 not found');
     await server.stop();
     t.end();
   });
   await server.start();
-  const response = await server.inject({ url: '/breaking' });
+  const response = await server.inject({ url: '/breaking/ambiguously' });
   t.equal(response.statusCode, 404);
 });
 
