@@ -1,4 +1,4 @@
-const Hoek = require('hoek');
+const aug = require('aug');
 const useragent = require('useragent');
 const isBot = require('isbot');
 
@@ -16,7 +16,7 @@ const defaults = {
 const contains = (arr1, arr2) => arr1.some(item => arr2.includes(item));
 
 const register = (server, options) => {
-  options = Hoek.applyToDefaults(defaults, options);
+  options = aug(defaults, options);
 
   const getLogData = (request, statusCode) => {
     const logData = {
