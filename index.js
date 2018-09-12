@@ -108,7 +108,7 @@ const register = (server, options) => {
       }
 
       // if the event has an error we will use that instead:
-      data.message = `${statusCode} error on path ${request.url.path}`;
+      data.message = `${statusCode} error on path ${request.route.path}`;
       if (event && event.error) {
         if (event.error.message) {
           data.message = event.error.message;
@@ -149,7 +149,7 @@ const register = (server, options) => {
         default:
           break;
       }
-      data.message = `${request.url.path}: ${data.message}`;
+      data.message = `${request.route.path}: ${data.message}`;
       server.log(tags, data);
     }
   });
