@@ -30,7 +30,7 @@
     "wreck": "^14.0.2"
   },
   "dependencies": {
-    "hoek": "4.1.0",
+    "aug": "^2.0.1",
     "isbot": "^2.1.2",
     "useragent": "^2.2.1"
   },
