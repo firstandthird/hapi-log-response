@@ -833,7 +833,7 @@ test('options.ignoreUnauthorizedTry', async (t) => {
   t.end();
 });
 
-test('options.requests logs a response for every request', async (t) => {
+test('options.requests logs a response time for requests', async (t) => {
   const server = new Hapi.Server({
     debug: {
       //request: ['error']
