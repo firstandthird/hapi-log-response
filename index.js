@@ -20,7 +20,6 @@ const register = (server, options) => {
 
   const getLogData = (request, statusCode) => {
     const logData = {
-      referrer: request.info.referrer,
       browser: useragent.parse(request.headers['user-agent']).toString(),
       userAgent: request.headers['user-agent'],
       isBot: isBot(request.headers['user-agent']),
@@ -28,10 +27,19 @@ const register = (server, options) => {
       method: request.method,
       path: request.path,
       query: Object.assign({}, request.query),
-      statusCode,
+      message: `${request.method} ${request.path} ${statusCode || ''}`
     };
+    if (statusCode) {
+      logData.statusCode = statusCode;
+    }
+    if (request.info.referrer) {
+      logData.referrer = request.info.referrer;
+    }
     if (options.includeId) {
       logData.id = request.info.id;
+    }
+    if (request.info.received && request.info.responded) {
+      logData.responseTime = request.info.responded - request.info.received;
     }
     return logData;
   };

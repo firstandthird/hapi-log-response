@@ -27,7 +27,7 @@ test('logs errors responses', async (t) => {
   });
   server.events.on('log', async (event, tags) => {
     t.deepEqual(tags, { 'detailed-response': true, 'user-error': true, 'bad-request': true }, 'returns the right tags');
-    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'statusCode', 'message', 'error'], 'includes data about the request');
+    t.deepEqual(Object.keys(event.data), ['browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'message', 'statusCode', 'error'], 'includes data about the request');
     t.equal(event.data.message, '/error: bad bad bad');
     t.equal(event.data.error.message, 'bad bad bad');
     t.equal(event.data.error.stack.startsWith('Error: bad bad bad'), true);
@@ -67,7 +67,7 @@ test('logs errors responses, option to include hapi tags', async (t) => {
   });
   server.events.on('log', async (event, tags) => {
     t.deepEqual(tags, { 'detailed-response': true, handler: true, 'user-error': true, 'bad-request': true }, 'returns the right tags');
-    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'statusCode', 'message', 'error'], 'includes data about the request');
+    t.deepEqual(Object.keys(event.data), ['browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'message', 'statusCode', 'error'], 'includes data about the request');
     t.equal(event.data.error.message, 'bad bad bad');
     t.equal(event.data.message, '/error: bad bad bad');
     t.equal(event.data.error.stack.startsWith('Error: bad bad bad'), true);
@@ -609,7 +609,7 @@ test('options.requests logs a response for every request', async (t) => {
   });
   server.events.on('log', async (event, tags) => {
     t.deepEqual(tags, { 'detailed-response': true }, 'returns the right tags');
-    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'statusCode'], 'includes data about the request');
+    t.deepEqual(Object.keys(event.data), ['browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'message', 'responseTime'], 'includes data about the request');
     await server.stop();
     t.end();
   });
@@ -642,7 +642,7 @@ test('options.includeId will also include the request id', async (t) => {
   });
   server.events.on('log', async (event, tags) => {
     t.deepEqual(tags, { 'detailed-response': true }, 'returns the right tags');
-    t.deepEqual(Object.keys(event.data), ['referrer', 'browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'statusCode', 'id'], 'includes data about the request');
+    t.deepEqual(Object.keys(event.data), ['browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'message', 'id', 'responseTime'], 'includes data about the request');
     await server.stop();
     t.end();
   });
@@ -831,4 +831,36 @@ test('options.ignoreUnauthorizedTry', async (t) => {
   t.equal(count, 1, 'only logs when mode is not "try"');
   await server.stop();
   t.end();
+});
+
+test('options.requests logs a response for every request', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      //request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+        requests: true
+      }
+    }
+  ]);
+  server.route({
+    method: 'GET',
+    path: '/justYourAverageRoute',
+    async handler(request, h) {
+      await wait(1001);
+      return 'everything is fine';
+    }
+  });
+  server.events.on('log', async (event, tags) => {
+    t.ok(event.data.responseTime > 1000);
+    await server.stop();
+    t.end();
+  });
+  await server.start();
+  await server.inject({ url: '/justYourAverageRoute' });
+  await wait(500);
 });
