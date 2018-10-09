@@ -609,7 +609,7 @@ test('options.requests logs a response for every request', async (t) => {
   });
   server.events.on('log', async (event, tags) => {
     t.deepEqual(tags, { 'detailed-response': true }, 'returns the right tags');
-    t.deepEqual(Object.keys(event.data), ['browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'message', 'responseTime'], 'includes data about the request');
+    t.deepEqual(Object.keys(event.data), ['browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'message', 'statusCode', 'responseTime'], 'includes data about the request');
     await server.stop();
     t.end();
   });
@@ -642,7 +642,7 @@ test('options.includeId will also include the request id', async (t) => {
   });
   server.events.on('log', async (event, tags) => {
     t.deepEqual(tags, { 'detailed-response': true }, 'returns the right tags');
-    t.deepEqual(Object.keys(event.data), ['browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'message', 'id', 'responseTime'], 'includes data about the request');
+    t.deepEqual(Object.keys(event.data), ['browser', 'userAgent', 'isBot', 'ip', 'method', 'path', 'query', 'message', 'statusCode', 'id', 'responseTime'], 'includes data about the request');
     await server.stop();
     t.end();
   });
