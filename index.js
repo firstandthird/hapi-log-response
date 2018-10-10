@@ -169,7 +169,8 @@ const register = (server, options) => {
       if (request.route.settings.plugins['hapi-log-response'] && request.route.settings.plugins['hapi-log-response'].enabled === false) {
         return;
       }
-      server.log([].concat(options.tags), getLogData(request));
+      const statusCode = request.response ? request.response.statusCode : 500;
+      server.log([].concat(options.tags), getLogData(request, statusCode));
     });
   }
 };
