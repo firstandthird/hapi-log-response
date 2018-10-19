@@ -864,3 +864,71 @@ test('options.requests logs a response time for requests', async (t) => {
   await server.inject({ url: '/justYourAverageRoute' });
   await wait(500);
 });
+
+test('options.requestPayload will also include the request payload', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      //request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+        requestPayload: true,
+        requests: true
+      }
+    }
+  ]);
+  server.route({
+    method: 'POST',
+    path: '/justYourAverageRoute',
+    handler(request, h) {
+      return 'everything is fine';
+    }
+  });
+  server.events.on('log', async (event, tags) => {
+    t.deepEqual(tags, { 'detailed-response': true }, 'returns the right tags');
+    t.equal(typeof event.data.requestPayload, 'object');
+    t.equal(event.data.requestPayload.val1, 'one');
+    await server.stop();
+    t.end();
+  });
+  await server.start();
+  await server.inject({ method: 'POST', url: '/justYourAverageRoute', payload: { val1: 'one' } });
+  await wait(500);
+});
+
+test('options.requestHeaders will also include the request payload', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      //request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+        requestHeaders: true,
+        requests: true
+      }
+    }
+  ]);
+  server.route({
+    method: 'POST',
+    path: '/justYourAverageRoute',
+    handler(request, h) {
+      return 'everything is fine';
+    }
+  });
+  server.events.on('log', async (event, tags) => {
+    t.deepEqual(tags, { 'detailed-response': true }, 'returns the right tags');
+    t.equal(typeof event.data.requestHeaders, 'object');
+    t.deepEqual(Object.keys(event.data.requestHeaders), ['user-agent', 'host', 'content-type', 'content-length']);
+    await server.stop();
+    t.end();
+  });
+  await server.start();
+  await server.inject({ method: 'POST', url: '/justYourAverageRoute', payload: { val1: 'one' } });
+  await wait(500);
+});
