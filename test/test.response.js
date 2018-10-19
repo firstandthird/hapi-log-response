@@ -864,3 +864,42 @@ test('options.requests logs a response time for requests', async (t) => {
   await server.inject({ url: '/justYourAverageRoute' });
   await wait(500);
 });
+
+test('joi validation errors are logged', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      //request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+        requests: true
+      }
+    }
+  ]);
+  const joi = require('joi');
+  server.route({
+    method: 'GET',
+    path: '/justYourAverageRoute',
+    config: {
+      validate: {
+        query: {
+          value: joi.number()
+        }
+      }
+    },
+    handler(request, h) {
+      return 'everything is fine';
+    }
+  });
+  server.events.on('log', async(event, tags) => {
+    t.equal(event.data.statusCode, 400);
+    await server.stop();
+    t.end();
+  });
+  await server.start();
+  await server.inject({ url: '/justYourAverageRoute?notValue=wrong' });
+  await wait(500);
+});
