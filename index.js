@@ -10,6 +10,8 @@ const defaults = {
   includeId: false,
   ignoreUnauthorizedTry: false,
   includeEventTags: false,
+  requestPayload: false,
+  requestHeaders: false,
   tags: ['detailed-response']
 };
 
@@ -40,6 +42,12 @@ const register = (server, options) => {
     }
     if (request.info.received && request.info.responded) {
       logData.responseTime = request.info.responded - request.info.received;
+    }
+    if (options.requestPayload) {
+      logData.requestPayload = request.payload;
+    }
+    if (options.requestHeaders) {
+      logData.requestHeaders = request.headers;
     }
     return logData;
   };
