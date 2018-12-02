@@ -10,6 +10,8 @@ const defaults = {
   includeId: false,
   ignoreUnauthorizedTry: false,
   includeEventTags: false,
+  requestPayload: false,
+  requestHeaders: false,
   tags: ['detailed-response']
 };
 
@@ -27,7 +29,7 @@ const register = (server, options) => {
       method: request.method,
       path: request.path,
       query: Object.assign({}, request.query),
-      message: `${request.method} ${request.path} ${statusCode || ''}`
+      message: `${request.method.toUpperCase()} ${request.path} ${statusCode || ''}`
     };
     if (statusCode) {
       logData.statusCode = statusCode;
@@ -41,9 +43,25 @@ const register = (server, options) => {
     if (request.info.received && request.info.responded) {
       logData.responseTime = request.info.responded - request.info.received;
     }
+    if (options.requestPayload) {
+      logData.requestPayload = request.payload;
+    }
+    if (options.requestHeaders) {
+      logData.requestHeaders = request.headers;
+    }
+    if (request.response && request.response._error) {
+      const err = request.response._error;
+
+      logData.message = err.message;
+      logData.error = {
+        stack: err.stack,
+        data: err.data,
+        output: err.output
+      };
+    }
     return logData;
   };
-  // log HTTP 301/302 redirects and 404's here:
+  // log HTTP 301/302 redirects and 404's responses here:
   server.events.on({ name: 'response' }, (request) => {
     // individual routes can disable response logging:
     if (request.route.settings.plugins['hapi-log-response'] && request.route.settings.plugins['hapi-log-response'].enabled === false) {
@@ -67,7 +85,7 @@ const register = (server, options) => {
     } else {
       // everything else is a 404:
       tags.push('not-found');
-      data.message = 'HTTP 404 not found';
+      data.message = data.message || 'HTTP 404 not found';
     }
     data.message = `${request.route.path}: ${data.message}`;
     server.log(tags, data);

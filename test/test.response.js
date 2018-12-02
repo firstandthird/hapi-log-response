@@ -162,7 +162,8 @@ test('logs redirects', async (t) => {
   t.equal(response.statusCode, 302);
 });
 
-test('logs not-found errors', async (t) => {
+test('logs ambiguous not-found responses', async (t) => {
+  t.plan(4);
   const server = new Hapi.Server({
     debug: {
       //request: ['error']
@@ -183,16 +184,55 @@ test('logs not-found errors', async (t) => {
       return h.response('/breaking').code(404);
     }
   });
-  server.events.on('log', async (event, tags) => {
+  let logCount = 0;
+  server.events.on('log', (event, tags) => {
+    logCount += 1;
     t.equal(tags['not-found'], true);
-    t.equal(event.data.message, '/breaking/{param}: HTTP 404 not found');
-    await server.stop();
-    t.end();
+    t.equal(event.data.message, '/breaking/{param}: GET /breaking/ambiguously 404');
   });
   await server.start();
   const response = await server.inject({ url: '/breaking/ambiguously' });
   t.equal(response.statusCode, 404);
+  t.equal(logCount, 1);
+  await server.stop();
 });
+
+test('logs not-found errors', async (t) => {
+  t.plan(5);
+  const server = new Hapi.Server({
+    debug: {
+      //request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('vision') },
+    { plugin: require('../'),
+      options: {
+      }
+    }
+  ]);
+  server.route({
+    method: 'get',
+    path: '/breaking/{param}',
+    handler(request, h) {
+      throw boom.notFound('Page not found', { params: request.params, test: 'fuddy duddy' });
+    }
+  });
+  let logCount = 0;
+  server.events.on('log', (event, tags) => {
+    logCount += 1;
+    t.equal(tags['not-found'], true);
+    t.equal(event.data.message, '/breaking/{param}: Page not found');
+    t.equal(event.data.error.data.test, 'fuddy duddy');
+  });
+  await server.start();
+  const response = await server.inject({ url: '/breaking/ambiguously' });
+  t.equal(response.statusCode, 404);
+  t.equal(logCount, 1);
+  await server.stop();
+});
+
 
 test('logs client timeout  errors', async (t) => {
   const server = new Hapi.Server({
@@ -862,6 +902,74 @@ test('options.requests logs a response time for requests', async (t) => {
   });
   await server.start();
   await server.inject({ url: '/justYourAverageRoute' });
+  await wait(500);
+});
+
+test('options.requestPayload will also include the request payload', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      //request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+        requestPayload: true,
+        requests: true
+      }
+    }
+  ]);
+  server.route({
+    method: 'POST',
+    path: '/justYourAverageRoute',
+    handler(request, h) {
+      return 'everything is fine';
+    }
+  });
+  server.events.on('log', async (event, tags) => {
+    t.deepEqual(tags, { 'detailed-response': true }, 'returns the right tags');
+    t.equal(typeof event.data.requestPayload, 'object');
+    t.equal(event.data.requestPayload.val1, 'one');
+    await server.stop();
+    t.end();
+  });
+  await server.start();
+  await server.inject({ method: 'POST', url: '/justYourAverageRoute', payload: { val1: 'one' } });
+  await wait(500);
+});
+
+test('options.requestHeaders will also include the request payload', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      //request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+        requestHeaders: true,
+        requests: true
+      }
+    }
+  ]);
+  server.route({
+    method: 'POST',
+    path: '/justYourAverageRoute',
+    handler(request, h) {
+      return 'everything is fine';
+    }
+  });
+  server.events.on('log', async (event, tags) => {
+    t.deepEqual(tags, { 'detailed-response': true }, 'returns the right tags');
+    t.equal(typeof event.data.requestHeaders, 'object');
+    t.deepEqual(Object.keys(event.data.requestHeaders), ['user-agent', 'host', 'content-type', 'content-length']);
+    await server.stop();
+    t.end();
+  });
+  await server.start();
+  await server.inject({ method: 'POST', url: '/justYourAverageRoute', payload: { val1: 'one' } });
   await wait(500);
 });
 
