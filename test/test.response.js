@@ -38,10 +38,11 @@ test('logs errors responses', async (t) => {
     });
     t.deepEqual(Object.keys(event.data.error), ['message', 'stack', 'data', 'output']);
     await server.stop();
-    t.end();
   });
   await server.start();
   await server.inject({ url: '/error' });
+  await wait(600);
+  t.end();
 });
 
 test('logs errors responses, option to include hapi tags', async (t) => {
@@ -973,17 +974,17 @@ test('options.requestHeaders will also include the request payload', async (t) =
   await wait(500);
 });
 
-test('joi validation errors are logged', async (t) => {
+test('joi validation errors do not call request or log', async (t) => {
   const server = new Hapi.Server({
     debug: {
-      //request: ['error']
     },
     port: 8080
   });
   await server.register([
     { plugin: require('../'),
       options: {
-        requests: true
+        requestPayload: true,
+        requests: true,
       }
     }
   ]);
@@ -1002,12 +1003,19 @@ test('joi validation errors are logged', async (t) => {
       return 'everything is fine';
     }
   });
-  server.events.on('log', async(event, tags) => {
-    t.equal(event.data.statusCode, 400);
-    await server.stop();
-    t.end();
+  const oldLog = console.log;
+  const results = [];
+  console.log = (input) => {
+    results.push(input);
+  };
+  server.events.on({ name: 'request' }, (request) => {
+    t.fail();
   });
   await server.start();
   await server.inject({ url: '/justYourAverageRoute?notValue=wrong' });
-  await wait(500);
+  await wait(1500);
+  await server.stop();
+  console.log = oldLog;
+  t.equal(results.length, 0);
+  t.end();
 });
