@@ -12,7 +12,8 @@ const defaults = {
   includeEventTags: false,
   requestPayload: false,
   requestHeaders: false,
-  tags: ['detailed-response']
+  tags: ['detailed-response'],
+  logAborts: true
 };
 
 const contains = (arr1, arr2) => arr1.some(item => arr2.includes(item));
@@ -179,6 +180,18 @@ const register = (server, options) => {
       server.log(tags, data);
     }
   });
+
+  if (options.logAborts) {
+    server.events.on({ name: 'request' }, (request, h) => {
+      request.events.once('disconnect', () => {
+        const tags = [].concat(options.tags);
+        tags.push('client-disconnect');
+        const data = getLogData(request, 499);
+        data.message = `${request.route.path}: ${data.message}`;
+        server.log(tags, data);
+      });
+    });
+  }
 
   // options.request will register a handler that logs a response for every route:
   if (options.requests) {
