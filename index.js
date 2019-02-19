@@ -140,7 +140,7 @@ const register = (server, options) => {
           data.message = event.error.message;
         }
         // if it is a wreck response it includes the entire response object, which is too big:
-        if (event.error.data && event.error.data.isResponseError) {
+        if (event.error.data && event.error.data.res && event.error.data.isResponseError) {
           event.error.data = {
             path: event.error.data.res.req.path,
             method: event.error.data.res.req.method,
