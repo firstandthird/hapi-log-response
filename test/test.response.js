@@ -233,7 +233,6 @@ test('logs not-found errors', async (t) => {
   await server.stop();
 });
 
-
 test('logs client timeout  errors', async (t) => {
   const server = new Hapi.Server({
     debug: {
@@ -803,6 +802,51 @@ test('huge wreck errors are truncated', async (t) => {
     statusCode: 400,
     statusMessage: 'Bad Request'
   });
+  t.end();
+});
+
+test('handles missing req in error event  truncated', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      //request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+      }
+    }
+  ]);
+  server.events.on('log', async (event, tags) => {
+    await server.stop();
+  });
+  await server.start();
+  const request = {
+    method: 'get',
+    info: {
+
+    },
+    headers: {
+      'user-agent': 'blah'
+    },
+    route: {
+      settings: {
+        plugins: {
+          'hapi-log-response': {}
+        }
+      }
+    }
+  };
+  const event = {
+    tags: ['tag1'],
+    error: boom.badRequest('bad req'),
+  };
+  event.error.data = {
+    isResponseError: true
+  };
+  server.events.emit('request', [request, event, []]);
+  await wait(600);
   t.end();
 });
 
