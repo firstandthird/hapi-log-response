@@ -17,14 +17,14 @@
     "url": "https://github.com/firstandthird/hapi-log-response.git"
   },
   "devDependencies": {
-    "boom": "4.3.0",
-    "eslint": "^4.15.0",
+    "boom": "7.3.0",
+    "eslint": "^5.13.0",
     "eslint-config-firstandthird": "^4.3.0",
     "eslint-plugin-import": "^2.8.0",
     "handlebars": "^4.0.11",
-    "hapi": "^17.0.1",
-    "hapi-logr": "2.2.0",
-    "logr-console-color": "1.2.1",
+    "hapi": "^18.1.0",
+    "hapi-logr": "6.1.1",
+    "logr-console-color": "1.4.0",
     "tap": "^12.0.1",
     "vision": "^5.2.0",
     "wreck": "^14.0.2"

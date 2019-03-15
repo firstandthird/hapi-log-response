@@ -524,6 +524,37 @@ test('does not interfere with routes', async (t) => {
   t.end();
 });
 
+test('Handles 499', async (t) => {
+  const server = new Hapi.Server({
+    debug: {
+      //request: ['error']
+    },
+    port: 8080
+  });
+  await server.register([
+    { plugin: require('../'),
+      options: {
+      }
+    }
+  ]);
+  server.route([
+    {
+      method: 'GET',
+      path: '/hello',
+      handler(request, h) {
+        throw new boom('client disconnect', { // eslint-disable-line new-cap
+          statusCode: 499
+        });
+      }
+    },
+  ]);
+  await server.start();
+  const response = await server.inject({ url: '/hello' });
+  t.equal(response.statusCode, 499);
+  await server.stop();
+  t.end();
+});
+
 test('does not log when client closes the connection', async (t) => {
   const server = new Hapi.Server({
     debug: {
