@@ -1,6 +1,6 @@
 'use strict';
-const Hapi = require('hapi');
-const Boom = require('boom');
+const Hapi = require('@hapi/hapi');
+const Boom = require('@hapi/boom');
 const Handlebars = require('handlebars');
 const run = async () => {
   const server = new Hapi.Server({
@@ -10,7 +10,7 @@ const run = async () => {
     port: 8080
   });
   await server.register([
-    { plugin: require('vision') },
+    { plugin: require('@hapi/vision') },
     { plugin: require('hapi-logr'),
       options: {
         reporters: {

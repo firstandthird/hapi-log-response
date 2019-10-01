@@ -1,7 +1,7 @@
 const test = require('tap').test;
-const Hapi = require('hapi');
-const boom = require('boom');
-const wreck = require('wreck');
+const Hapi = require('@hapi/hapi');
+const boom = require('@hapi/boom');
+const wreck = require('@hapi/wreck');
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -171,7 +171,7 @@ test('logs ambiguous not-found responses', async (t) => {
     port: 8080
   });
   await server.register([
-    { plugin: require('vision') },
+    { plugin: require('@hapi/vision') },
     { plugin: require('../'),
       options: {
       }
@@ -206,7 +206,7 @@ test('logs not-found errors', async (t) => {
     port: 8080
   });
   await server.register([
-    { plugin: require('vision') },
+    { plugin: require('@hapi/vision') },
     { plugin: require('../'),
       options: {
       }
@@ -241,7 +241,7 @@ test('logs client timeout  errors', async (t) => {
     port: 8080
   });
   await server.register([
-    { plugin: require('vision') },
+    { plugin: require('@hapi/vision') },
     { plugin: require('../'),
       options: {
       }
@@ -273,7 +273,7 @@ test('logs service unavailable errors', async (t) => {
     port: 8080
   });
   await server.register([
-    { plugin: require('vision') },
+    { plugin: require('@hapi/vision') },
     { plugin: require('../'),
       options: {
       }
@@ -305,7 +305,7 @@ test('logs bad request errors', async (t) => {
     port: 8080
   });
   await server.register([
-    { plugin: require('vision') },
+    { plugin: require('@hapi/vision') },
     { plugin: require('../'),
       options: {
       }
@@ -337,7 +337,7 @@ test('logs unauthorized tag', async (t) => {
     port: 8080
   });
   await server.register([
-    { plugin: require('vision') },
+    { plugin: require('@hapi/vision') },
     { plugin: require('../'),
       options: {
       }
@@ -369,7 +369,7 @@ test('logs internal-server tag', async (t) => {
     port: 8080
   });
   await server.register([
-    { plugin: require('vision') },
+    { plugin: require('@hapi/vision') },
     { plugin: require('../'),
       options: {
       }
@@ -406,7 +406,7 @@ test('does not log not-found errors as user-errors', async (t) => {
     port: 8080
   });
   await server.register([
-    { plugin: require('vision') },
+    { plugin: require('@hapi/vision') },
     { plugin: require('../'),
       options: {
       }
