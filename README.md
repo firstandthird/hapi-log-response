@@ -12,7 +12,7 @@
 
 Log request and response payloads based on statusCode
 
-## Instalation
+## Installation
 
 ```sh
 npm install hapi-log-response
