@@ -6,7 +6,7 @@ const wreck = require('@hapi/wreck');
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 test('logs errors responses', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -45,7 +45,7 @@ test('logs errors responses', async (t) => {
 });
 
 test('logs errors responses, option to include hapi tags', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -85,7 +85,7 @@ test('logs errors responses, option to include hapi tags', async (t) => {
 });
 
 test('individual routes can disable plugin', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -123,7 +123,7 @@ test('individual routes can disable plugin', async (t) => {
 });
 
 test('logs redirects', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -164,7 +164,7 @@ test('logs redirects', async (t) => {
 
 test('logs ambiguous not-found responses', async (t) => {
   t.plan(4);
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -199,7 +199,7 @@ test('logs ambiguous not-found responses', async (t) => {
 
 test('logs not-found errors', async (t) => {
   t.plan(5);
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -234,7 +234,7 @@ test('logs not-found errors', async (t) => {
 });
 
 test('logs client timeout  errors', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -266,7 +266,7 @@ test('logs client timeout  errors', async (t) => {
 });
 
 test('logs service unavailable errors', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -298,7 +298,7 @@ test('logs service unavailable errors', async (t) => {
 });
 
 test('logs bad request errors', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -330,7 +330,7 @@ test('logs bad request errors', async (t) => {
 });
 
 test('logs unauthorized tag', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -362,7 +362,7 @@ test('logs unauthorized tag', async (t) => {
 });
 
 test('logs internal-server tag', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -399,7 +399,7 @@ test('logs internal-server tag', async (t) => {
 });
 
 test('does not log not-found errors as user-errors', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -427,7 +427,7 @@ test('does not log not-found errors as user-errors', async (t) => {
 });
 
 test('does not log user errors responses', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -459,7 +459,7 @@ test('does not log user errors responses', async (t) => {
 });
 
 test('logs server errors', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -496,7 +496,7 @@ test('logs server errors', async (t) => {
 });
 
 test('does not interfere with routes', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -525,7 +525,7 @@ test('does not interfere with routes', async (t) => {
 });
 
 test('does not log when client closes the connection', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -550,7 +550,7 @@ test('does not log when client closes the connection', async (t) => {
 });
 
 test('passes custom error data', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -587,7 +587,7 @@ test('passes custom error data', async (t) => {
 });
 
 test('options.excludeStatus', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -626,7 +626,7 @@ test('options.excludeStatus', async (t) => {
 });
 
 test('options.requests logs a response for every request', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -658,7 +658,7 @@ test('options.requests logs a response for every request', async (t) => {
 });
 
 test('options.includeId will also include the request id', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -691,7 +691,7 @@ test('options.includeId will also include the request id', async (t) => {
 });
 
 test('options.requiredTags controls what tags will trigger a log', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -726,7 +726,7 @@ test('options.requiredTags controls what tags will trigger a log', async (t) => 
 });
 
 test('options.requiredTags just logs everything if set to empty', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -763,7 +763,7 @@ test('options.requiredTags just logs everything if set to empty', async (t) => {
 });
 
 test('huge wreck errors are truncated', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -806,7 +806,7 @@ test('huge wreck errors are truncated', async (t) => {
 });
 
 test('handles missing req in error event  truncated', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -851,7 +851,7 @@ test('handles missing req in error event  truncated', async (t) => {
 });
 
 test('options.ignoreUnauthorizedTry', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       request: ['user-error']
     },
@@ -918,7 +918,7 @@ test('options.ignoreUnauthorizedTry', async (t) => {
 });
 
 test('options.requests logs a response time for requests', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -950,7 +950,7 @@ test('options.requests logs a response time for requests', async (t) => {
 });
 
 test('options.requestPayload will also include the request payload', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },
@@ -984,7 +984,7 @@ test('options.requestPayload will also include the request payload', async (t) =
 });
 
 test('options.requestHeaders will also include the request payload', async (t) => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       //request: ['error']
     },

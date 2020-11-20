@@ -1,9 +1,8 @@
-'use strict';
 const Hapi = require('@hapi/hapi');
 const Boom = require('@hapi/boom');
 const Handlebars = require('handlebars');
 const run = async () => {
-  const server = new Hapi.Server({
+  const server = Hapi.server({
     debug: {
       request: ['error']
     },
@@ -93,7 +92,6 @@ const run = async () => {
     }
   ]);
   await server.start();
-  console.log('starting');
   server.log(['log', 'server'], `Hapi server started ${server.info.uri}`);
 };
 
