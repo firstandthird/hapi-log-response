@@ -4,34 +4,32 @@
   "homepage": "https://github.com/firstandthird/hapi-log-response",
   "author": "First+Third",
   "version": "5.0.0",
+  "license": "MIT",
   "scripts": {
-    "test": "eslint . && tap test/test.response.js",
+    "test": "tap",
     "example": "node example/server.js",
     "lint": "eslint ."
-  },
-  "engine": {
-    "node": ">=8.0.0"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/firstandthird/hapi-log-response.git"
   },
   "devDependencies": {
-    "@hapi/boom": "^8.0.1",
-    "@hapi/hapi": "^18.4.0",
-    "@hapi/vision": "^5.5.4",
-    "@hapi/wreck": "^15.1.0",
-    "eslint": "^5.16.0",
-    "eslint-config-firstandthird": "^4.3.0",
+    "@hapi/boom": "^9.1.0",
+    "@hapi/hapi": "^20.0.3",
+    "@hapi/vision": "^6.0.1",
+    "@hapi/wreck": "^17.1.0",
+    "eslint": "^7.14.0",
+    "eslint-config-firstandthird": "^6.0.2",
     "eslint-plugin-import": "^2.17.2",
     "handlebars": "^4.1.2",
-    "hapi-logr": "^6.2.0",
-    "logr-console-color": "^1.4.0",
-    "tap": "^13.1.2"
+    "hapi-logr": "^9.0.2",
+    "logr-console-color": "^2.0.0",
+    "tap": "^14.11.0"
   },
   "dependencies": {
-    "aug": "^3.0.1",
-    "isbot": "^2.2.1",
+    "aug": "^4.0.0",
+    "isbot": "^3.0.17",
     "useragent": "^2.3.0"
   },
   "eslintConfig": {
