@@ -30,22 +30,10 @@ yarn add hapi-log-response
 Register just like any other hapi plugin:
 
 ```javascript
-const Hapi = require('@hapi/hapi');
-const server = Hapi.server({
-  debug: {
-    request: ['error']
-  },
-  port: 8080
-});
 await server.register({
   plugin: require('hapi-log-response'),
   options: {}
 });
-```
-
-Now if you have a route like:
-```js
-
 ```
 
 ```js
@@ -90,6 +78,10 @@ hapi-log-response will add the following tags to the log depending on the HTTP s
 - _503_ 'service-unavailable'
 - _504_ 'client-timeout'
 
+Additionally hapi-log-response will add the 'detailed-response'
+tag to every log it enters, unless you requested something different using the _tag_ option (see below).
+
+
 ## Options
 
 You can configure hapi-log-response by configuring the following options when you register the plugin:
@@ -128,7 +120,7 @@ You can configure hapi-log-response by configuring the following options when yo
 
 - _tags_
 
-  An array containing zero or more strings that will be used to tag logged responses. If not specified, the default is `['detailed-response']`.
+  An array containing zero or more strings that will be added to the list of tags accompanying the log. If not specified, the default is `['detailed-response']`.
 
 
 ---
